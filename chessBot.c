@@ -16,10 +16,11 @@
           { 6, 2, 4, 8,10, 4, 2, 6}  \
      }
 */
+
 #define INITIAL_BOARD_STATE          \
      {                               \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
-          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1, 1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
@@ -123,11 +124,12 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           newPosition[y+direction][x] = 1-playerIsWhite;
           newPosition[y][x] = -1;
           head = appendToBLL(newPosition, head);
+
           //Double Movement
           if(y == 1+5*playerIsWhite &&  position[y+direction*2][x]  == -1)
           {
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[y+direction*2][x] = position[y][x]+12;
+               newPosition[y+direction*2][x] = 13-playerIsWhite;
                newPosition[y][x] = -1;
                head = appendToBLL(newPosition, head);
           }
@@ -245,12 +247,12 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsWhite)
                     continue;
                }
                //Check if piece belongs to opposite player
-               if ((playerIsWhite && piece & 1 == 1) || (!playerIsWhite && piece & 1 != 1))
+               if (playerIsWhite == piece & 1)
                {
                     continue;
 
                }
-               if(piece != 0){
+               if(piece != 0 && piece != 12 && piece != 1 && piece != 13){
                     continue;
                }
                int pieceType = piece / 2;
@@ -267,7 +269,12 @@ int main()
 
      boardPosition initial = {.whiteMove = true, .position = INITIAL_BOARD_STATE, .eval = 0x7000};
      boardLinkedList *initialMoves = getPossibleMovesFromBoard(initial.position,initial.whiteMove);
-     printBLL(*initialMoves);
+     //printBLL(*initialMoves);
+
+     boardLinkedList *secondMoves = getPossibleMovesFromBoard(initialMoves->next->current,false);
+     printBLL(*secondMoves);
+     freeBLL(secondMoves);
+
      freeBLL(initialMoves);
      // printf("%i",sizeof(boardPosition));
 }
