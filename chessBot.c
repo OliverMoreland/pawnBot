@@ -1,21 +1,34 @@
-#include <stdbool.h>
 #include <stdio.h>
-
+#include <string.h>
+#include <stdlib.h>
 #define BOARD_SIZE 8
-#define INITIAL_BOARD_STATE                     \
-     {                                          \
-          {7, 3, 5, 9, 11, 5, 3, 7},            \
-              {1, 1, 1, 1, 1, 1, 1, 1},         \
-              {-1, -1, -1, -1, -1, -1, -1, -1}, \
-              {-1, -1, -1, -1, -1, -1, -1, -1}, \
-              {-1, -1, -1, -1, -1, -1, -1, -1}, \
-              {-1, -1, -1, -1, -1, -1, -1, -1}, \
-              {0, 0, 0, 0, 0, 0, 0, 0},         \
-          {                                     \
-               6, 2, 4, 8, 10, 4, 2, 6          \
-          }                                     \
+
+/* For final
+#define _INITIAL_BOARD_STATE          \
+     {                               \
+          { 7, 3, 5, 9,11, 5, 3, 7}, \
+          { 1, 1, 1, 1, 1, 1, 1, 1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          { 0, 0, 0, 0, 0, 0, 0, 0}, \
+          { 6, 2, 4, 8,10, 4, 2, 6}  \
+     }
+*/
+#define INITIAL_BOARD_STATE          \
+     {                               \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1, 0,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}  \
      }
 
+typedef enum { false, true } bool;
 
 /*Notes:
 -E000 < eval < E000
@@ -29,6 +42,9 @@ White:      |  Black:
 6 = Rook    |  7 = Rook
 8 = Queen   |  9 = Queen
 10 = King   |  11 = King
+12 = PawnM2 |  13 = PawnM2
+
+PawnM2 is a pawn that has just moved two spaces forward, to allow for en passante
 
 Black is up,
 White is down
@@ -39,50 +55,155 @@ Boards are [UP->DOWN = 0 - 7][LEFT-RIGHT = 0-7]
 const short pointValues[6] = {1, 3, 3, 5, 9};
 
 typedef int board[BOARD_SIZE][BOARD_SIZE];
-
 typedef struct boardPosition
 {
      bool whiteMove;
      short eval;
      board position;
-     boardPosition parent;
-     boardPosition children;
+     struct boardPosition *children;
 } boardPosition;
+
+
 
 typedef struct boardLinkedList
 {
      board current;
-     boardLinkedList *next;
+     struct boardLinkedList *next;
 } boardLinkedList;
 
+void freeBLL(boardLinkedList *toFree){
+     if((*toFree).next != 0)
+     {
+          freeBLL((*toFree).next);
+     }
+     free(toFree);
+     return;
+}
 
-
-
-boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedList *head)
+boardLinkedList* appendToBLL(board toAppend,boardLinkedList *head)
 {
+     
+     memcpy( (*head).current,toAppend, sizeof( (*head).current ) );
+     (*head).next = (boardLinkedList *)malloc(sizeof(boardLinkedList));
+     head = (*head).next;
+     (*head).next = 0;
+
+     return head;
+}
+void printBLL(boardLinkedList root){
+     if(root.next == 0){
+          return;
+     }
+     printf("\n\n\nBoard\n\n");
+     for (int y = 0; y < BOARD_SIZE; y++)
+     {
+          printf("|");
+
+          for (int x = 0; x < BOARD_SIZE; x++)
+          {
+               printf(" %2d |",root.current[y][x]);
+          }
+          printf("\n");
+     }
+     printBLL(*(root.next));
+
+
+}
+
+
+
+boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
+{
+     int direction = playerIsWhite ? -1 : 1;
+     board newPosition;
+     if(position[y+direction][x] == -1)
+     {
+          //Standard Movement
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[y+direction][x] = 1-playerIsWhite;
+          newPosition[y][x] = -1;
+          head = appendToBLL(newPosition, head);
+          //Double Movement
+          if(y == 1+5*playerIsWhite &&  position[y+direction*2][x]  == -1)
+          {
+               memcpy(newPosition,position,sizeof(newPosition));
+               newPosition[y+direction*2][x] = position[y][x]+12;
+               newPosition[y][x] = -1;
+               head = appendToBLL(newPosition, head);
+          }
+     }
+     //Capture
+     if(position[y+direction][x-1] >= 0 && position[y+direction][x-1] & 1 == playerIsWhite)
+     {
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[y+direction][x-1] = 1-playerIsWhite;
+          newPosition[y][x] = -1;
+          head = appendToBLL(newPosition, head);
+     
+     }
+     if(position[y+direction][x+1] >= 0 && position[y+direction][x+1] & 1 == playerIsWhite)
+     {
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[y+direction][x+1] = 1-playerIsWhite;
+          newPosition[y][x] = -1;
+          head = appendToBLL(newPosition, head);
+     
+     }
+     //En Passante
+     if(position[y][x-1] == 13-playerIsWhite && position[y+direction][x-1] == -1 && position[y][x-1] & 1 == playerIsWhite)
+     {
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[y+direction][x-1] = position[y][x];
+          newPosition[y][x] = -1;
+          newPosition[y][x-1] = -1;
+
+          head = appendToBLL(newPosition, head);
+     
+     }
+     if(position[y][x+1] == 13-playerIsWhite && position[y+direction][x+1] == -1 && position[y][x+1] & 1 == playerIsWhite)
+     {
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[y+direction][x+1] = position[y][x];
+          newPosition[y][x] = -1;
+          newPosition[y][x+1] = -1;
+
+          head = appendToBLL(newPosition, head);
+     
+     }
+
+
+     return head;
 
 }    
-boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinkedList *head)
+boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
      
 }
-boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinkedList *head)
+boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
      
 }  
-boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedList *head)
+boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
      
 }      
-boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinkedList *head)
+boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
      
 }      
-boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedList *head)
+boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
      
 }   
-boardLinkedList *(*functionsThatGetPossibleMoves[])(board position, int x, int y, boardLinkedList *head) = {&getPossibleMovesPawn};
+boardLinkedList *(*functionsThatGetPossibleMoves[])(board position, int x, int y, boardLinkedList *head, bool playerIsWhite) = {
+     &getPossibleMovesPawn,
+     &getPossibleMovesKnight,
+     &getPossibleMovesBishop,
+     &getPossibleMovesRook,
+     &getPossibleMovesQueen,
+     &getPossibleMovesKing,
+     &getPossibleMovesPawn
+     };
 
 // boardLinkedList *getPossibleMovesFromPiece(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 // {
@@ -117,25 +238,36 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsWhite)
      {
           for (int x = 0; x < BOARD_SIZE; x++)
           {
+               int piece = position[y][x];
                //Check if square is empty
-               if (position[y][x] == -1)
+               if (piece == -1)
                {
                     continue;
                }
                //Check if piece belongs to opposite player
-               if ((playerIsWhite && position[y][x] & 1 == 1) || (!playerIsWhite && position[y][x] & 1 != 1))
+               if ((playerIsWhite && piece & 1 == 1) || (!playerIsWhite && piece & 1 != 1))
                {
                     continue;
 
                }
-               head = getPossibleMovesFromPiece(position, x, y, head, playerIsWhite);
+               if(piece != 0){
+                    continue;
+               }
+               int pieceType = piece / 2;
+               head = functionsThatGetPossibleMoves[pieceType](position, x, y, head, playerIsWhite);
+               
           }
      }
+     
+     return root;
 }
 
 int main()
 {
 
      boardPosition initial = {.whiteMove = true, .position = INITIAL_BOARD_STATE, .eval = 0x7000};
+     boardLinkedList *initialMoves = getPossibleMovesFromBoard(initial.position,initial.whiteMove);
+     printBLL(*initialMoves);
+     freeBLL(initialMoves);
      // printf("%i",sizeof(boardPosition));
 }
