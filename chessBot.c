@@ -16,6 +16,7 @@
           }                                     \
      }
 
+
 /*Notes:
 -E000 < eval < E000
 
@@ -55,12 +56,33 @@ typedef struct boardLinkedList
 } boardLinkedList;
 
 
-void getPossibleMovesPawn(board position, int x, int y, boardLinkedList *head)
+
+
+boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedList *head)
 {
 
+}    
+boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinkedList *head)
+{
+     
 }
-
-void (getPossibleMovesFromPieceFunctions*)(board position, int x, int y, boardLinkedList *head) = 
+boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinkedList *head)
+{
+     
+}  
+boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedList *head)
+{
+     
+}      
+boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinkedList *head)
+{
+     
+}      
+boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedList *head)
+{
+     
+}   
+boardLinkedList *(*functionsThatGetPossibleMoves[])(board position, int x, int y, boardLinkedList *head) = {&getPossibleMovesPawn};
 
 // boardLinkedList *getPossibleMovesFromPiece(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 // {
