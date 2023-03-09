@@ -20,12 +20,12 @@
 #define INITIAL_BOARD_STATE          \
      {                               \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
-          {-1,-1, 1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,2,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
-          {-1, 0,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}  \
      }
 
@@ -135,7 +135,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           }
      }
      //Capture
-     if(position[y+direction][x-1] >= 0 && position[y+direction][x-1] & 1 == playerIsWhite)
+     if(position[y+direction][x-1] >= 0 && !((position[y+direction][x-1] & 1) - playerIsWhite))
      {
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[y+direction][x-1] = 1-playerIsWhite;
@@ -143,7 +143,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           head = appendToBLL(newPosition, head);
      
      }
-     if(position[y+direction][x+1] >= 0 && position[y+direction][x+1] & 1 == playerIsWhite)
+     if(position[y+direction][x+1] >= 0 && !((position[y+direction][x+1] & 1) - playerIsWhite))
      {
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[y+direction][x+1] = 1-playerIsWhite;
@@ -152,7 +152,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      
      }
      //En Passante
-     if(position[y][x-1] == 13-playerIsWhite && position[y+direction][x-1] == -1 && position[y][x-1] & 1 == playerIsWhite)
+     if(position[y][x-1] == 12+playerIsWhite && position[y+direction][x-1] == -1 && !((position[y][x-1] & 1) - playerIsWhite))
      {
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[y+direction][x-1] = position[y][x];
@@ -162,7 +162,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           head = appendToBLL(newPosition, head);
      
      }
-     if(position[y][x+1] == 13-playerIsWhite && position[y+direction][x+1] == -1 && position[y][x+1] & 1 == playerIsWhite)
+     if(position[y][x+1] == 12+playerIsWhite && position[y+direction][x+1] == -1 && !((position[y][x+1] & 1) - playerIsWhite))
      {
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[y+direction][x+1] = position[y][x];
@@ -179,7 +179,42 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
 }    
 boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
-     
+     board newPosition;
+
+     for(int i = 0;i<8;i++){
+          /*
+           0 1
+          2   3
+
+          6   7
+           4 5 
+          
+          This is probably needlessly complicated
+          */
+          int xToCheck = x + (((i / 2) & 1)+1) * ((i & 1)*2 - 1);    
+
+          if(xToCheck > BOARD_SIZE || xToCheck < 0){
+               continue;
+          }
+          int yToCheck = y + (!((i / 2) & 1)+1) * (((i/4)*2 - 1));
+          if(yToCheck>BOARD_SIZE || yToCheck < 0)
+          {
+               continue;
+          }
+          if(((position[yToCheck][xToCheck] & 1) - playerIsWhite))
+          {
+               continue;
+          }
+          memcpy(newPosition,position,sizeof(newPosition));
+          newPosition[yToCheck][xToCheck] = position[y][x];
+          newPosition[y][x] = -1;
+
+          head = appendToBLL(newPosition, head);
+
+     }
+     return head;
+
+
 }
 boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinkedList *head, bool playerIsWhite)
 {
@@ -247,14 +282,12 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsWhite)
                     continue;
                }
                //Check if piece belongs to opposite player
-               if (playerIsWhite == piece & 1)
+               if (!((piece & 1) - playerIsWhite))
                {
                     continue;
 
                }
-               if(piece != 0 && piece != 12 && piece != 1 && piece != 13){
-                    continue;
-               }
+               
                int pieceType = piece / 2;
                head = functionsThatGetPossibleMoves[pieceType](position, x, y, head, playerIsWhite);
                
@@ -269,11 +302,19 @@ int main()
 
      boardPosition initial = {.whiteMove = true, .position = INITIAL_BOARD_STATE, .eval = 0x7000};
      boardLinkedList *initialMoves = getPossibleMovesFromBoard(initial.position,initial.whiteMove);
-     //printBLL(*initialMoves);
+     printBLL(*initialMoves);
+     
+     // boardLinkedList *secondMoves = getPossibleMovesFromBoard(initialMoves->next->current,false);
+     
+     // printf("\n\nSecond Move from initialMoves next\n\n");
+     // boardLinkedList *thirdMoves = getPossibleMovesFromBoard(secondMoves->next->current,true);
+     // printBLL(*secondMoves);
+     // freeBLL(secondMoves);
+     // printf("\n\nThird Move from secondMoves next\n\n");
+     // printBLL(*thirdMoves);
+     // freeBLL(thirdMoves);
 
-     boardLinkedList *secondMoves = getPossibleMovesFromBoard(initialMoves->next->current,false);
-     printBLL(*secondMoves);
-     freeBLL(secondMoves);
+     
 
      freeBLL(initialMoves);
      // printf("%i",sizeof(boardPosition));
