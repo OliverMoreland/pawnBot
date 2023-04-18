@@ -92,12 +92,13 @@ Boards are [UP->DOWN = 0 - 7][LEFT-RIGHT = 0-7]
 #define PAWN_M2 6
 #define U_KING 7
 #define U_ROOK 8
-#define NUM_PIECES 6
-const char pieces_chars[6] = {'p','k','b','r','q','k'};
+#define NUM_PIECE_TYPES 6
+const char pieces_chars[6] = {'p','k','b','r','Q','K'};
 const char x_chars[8] = {'a','b','c','d','e','f','g','h'};
 const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 
-const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
+//Flipped for different terminals: const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
+const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
 
 const short pointValues[6] = {1, 3, 3, 5, 9};
 #pragma endregion
@@ -146,7 +147,7 @@ typedef struct boardLinkedList
 
 int BLL_length(boardLinkedList *BLL){
      if(BLL->next == 0){
-          return 1;
+          return 0;
      }
      return BLL_length(BLL->next)+1;
 }
@@ -583,7 +584,7 @@ boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedL
                newPosition[yToCheck][xToCheck] = 7-playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
-               printf("%i, %i\n",xToCheck,yToCheck);
+               //printf("%i, %i\n",xToCheck,yToCheck);
                if(!IS_EMPTY(position[yToCheck][xToCheck]))
                {
                     break;
@@ -677,7 +678,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                newPosition[yToCheck][xToCheck] = 7-playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
-               printf("%i, %i\n",xToCheck,yToCheck);
+               //printf("%i, %i\n",xToCheck,yToCheck);
                if(!IS_EMPTY(position[yToCheck][xToCheck]))
                {
                     break;
@@ -871,9 +872,9 @@ piece read_piece(){
      char p, x, y;
      piece ret;
      printf("Make your move: ");
-     scanf("%c%c%c",&p,&x,&y);
+     scanf("\n%c%c%c",&p,&x,&y);
      printf("Received p: %c, x: %c, y: %c\n",p,x,y);
-     for(int i = 0;i<NUM_PIECES;i++){
+     for(int i = 0;i<NUM_PIECE_TYPES;i++){
           if(pieces_chars[i] == p){
                ret.type = i;
           }
@@ -895,21 +896,40 @@ piece read_piece(){
 
 
 void human_move(board current){
-     piece to_move = read_piece();
      boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
      boardLinkedList *head = possibleMoves;
-     while(head != 0){
-          if(GET_TYPE(head->current[to_move.y][to_move.x]) == to_move.type){
-               memcpy(current,head->current,sizeof(board));
-               break;
+     while(true){
+          piece to_move = read_piece();
+          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES){
+               printf("Error: illegal move\n");
+               continue;
           }
-          head = head->next;
+          while(head->next != 0){
+               if(
+                    GET_TYPE(head->current[to_move.y][to_move.x]) == to_move.type 
+                    || 
+                    (GET_TYPE(head->current[to_move.y][to_move.x]) == PAWN && to_move.type == PAWN_M2) 
+                    || 
+                    (GET_TYPE(head->current[to_move.y][to_move.x]) == PAWN_M2 && to_move.type == PAWN) 
+                    || 
+                    (GET_TYPE(head->current[to_move.y][to_move.x]) == ROOK && to_move.type == U_ROOK) 
+                    || 
+                    (GET_TYPE(head->current[to_move.y][to_move.x]) == KING && to_move.type == U_KING))
+               {
+                    memcpy(current,head->current,sizeof(board));
+                    freeBLL(possibleMoves);
+                    return;
+               }
+               head = head->next;
+          }
+          if(head->next == 0){
+               printf("Error: illegal move\n");
+          }
      }
 
-     freeBLL(possibleMoves);
-     return;
+     
 }
 
 #pragma endregion
@@ -926,7 +946,8 @@ int main()
           computer_move(current);
           printBoard(current);
           human_move(current);
-          sleep(10);
+
+          sleep(0.1);
      }
      
 
