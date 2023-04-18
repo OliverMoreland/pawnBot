@@ -1,9 +1,17 @@
+
+
+#pragma region // Includes, defines and globals
+
+#include <unistd.h>
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <wchar.h>      /* wint_t */
 #include <locale.h>
+#define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 #define BOARD_SIZE 8
+#define COMPUTER_IS_WHITE true
 // For final
 #define INITIAL_BOARD_STATE          \
      {                               \
@@ -17,7 +25,9 @@
           { 16, 2, 4, 8,14, 4, 2, 16}  \
      }
 
+
 /* 
+
 #define INITIAL_BOARD_STATE          \
      {                               \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
@@ -82,12 +92,43 @@ Boards are [UP->DOWN = 0 - 7][LEFT-RIGHT = 0-7]
 #define PAWN_M2 6
 #define U_KING 7
 #define U_ROOK 8
+#define NUM_PIECES 6
+const char pieces_chars[6] = {'p','k','b','r','q','k'};
+const char x_chars[8] = {'a','b','c','d','e','f','g','h'};
+const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 
-const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657,0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
+const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
 
 const short pointValues[6] = {1, 3, 3, 5, 9};
+#pragma endregion
+
+#pragma region // Board, and BLL and Position Processing
+
+
+
 
 typedef int board[BOARD_SIZE][BOARD_SIZE];
+
+void printBoard (board toPrint){
+     printf("   a  b  c  d  e  f  g  h \n");
+     for (int y = 0; y < BOARD_SIZE; y++)
+     {
+          printf("%d ",8-y);
+          for (int x = 0; x < BOARD_SIZE; x++)
+          {
+               //printf("%d ",toPrint[y][x]+1);
+
+               if(y&1 ^ x&1){
+                    printf("\x1b[40m %lc ", (wint_t)pieceChars[toPrint[y][x]+1]);
+               }else{
+                    printf("\x1b[41m %lc ", (wint_t)pieceChars[toPrint[y][x]+1]);
+               }
+          }
+          printf("\x1b[40m %d\n",8-y);
+     }
+     printf("   a  b  c  d  e  f  g  h \n");
+
+}
 
 typedef struct boardPosition
 {
@@ -103,11 +144,20 @@ typedef struct boardLinkedList
      struct boardLinkedList *next;
 } boardLinkedList;
 
-typedef struct piece {
-     int x;
-     int y;
-     int type;
-} piece;
+int BLL_length(boardLinkedList *BLL){
+     if(BLL->next == 0){
+          return 1;
+     }
+     return BLL_length(BLL->next)+1;
+}
+
+void BLL_item(boardLinkedList *BLL,int index, board out){
+     if(index == 0){
+          memcpy(out,BLL->current,sizeof(board));
+          return;
+     }
+     BLL_item(BLL->next,index-1,out);
+}
 
 void freeBLL(boardLinkedList *toFree){
      if(toFree->next != 0)
@@ -117,7 +167,6 @@ void freeBLL(boardLinkedList *toFree){
      free(toFree);
      return;
 }
-
 
 boardLinkedList* appendToBLL(board toAppend,boardLinkedList *head)
 {
@@ -130,36 +179,23 @@ boardLinkedList* appendToBLL(board toAppend,boardLinkedList *head)
      return head;
 }
 
-
-void printBoard (board toPrint){
-     for (int y = 0; y < BOARD_SIZE; y++)
-     {
-          for (int x = 0; x < BOARD_SIZE; x++)
-          {
-               if(y&1 ^ x&1){
-                    printf("\x1b[41m %lc ", (wint_t)pieceChars[toPrint[y][x]+1]);
-               }else{
-                    printf("\x1b[40m %lc ", (wint_t)pieceChars[toPrint[y][x]+1]);
-               }
-          }
-          printf("\x1b[40m \n");
-     }
-     
-}
-
-void printBLL(boardLinkedList root){
-    setlocale(LC_ALL, "");     
-     if(root.next == 0){
+void printBLL(boardLinkedList *root){
+     if(root->next == 0){
           printf("\nDONE\n");
           return;
      }
      printf("\n\n\nBoard\n\n");
-     printBoard(root.current);
-     printBLL(*(root.next));
+     printBoard(root->current);
+     printBLL(root->next);
 
 
 }
 
+typedef struct piece {
+     int x;
+     int y;
+     int type;
+} piece;
 
 piece findPiece(board position, int pieceToFind){
      piece ret;
@@ -329,9 +365,12 @@ boardLinkedList* movePiece(board newBoard,boardLinkedList *head, piece king){
           return head;
      return appendToBLL(newBoard, head);
 }
-/*
-     This is a group of functions that define how the pieces move (promotion and castling not yet implemented)
-*/
+
+
+#pragma endregion
+
+#pragma region // Possible Move Processing
+// This is a group of functions that define how the pieces move (promotion and en passante not yet implemented)
 
 
 
@@ -346,14 +385,14 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      if(IS_EMPTY(position[y+direction][x]))
      {
           //Standard Movement
-          newPosition[y+direction][x] = 1-playerIsBlack;
+          newPosition[y+direction][x] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
           memcpy(newPosition,position,sizeof(newPosition));
           //Double Movement
           if(y == 6-5*playerIsBlack &&  IS_EMPTY(position[y+direction*2][x]))
           {
-               newPosition[y+direction*2][x] = 13-playerIsBlack;
+               newPosition[y+direction*2][x] = PAWN_M2*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
                memcpy(newPosition,position,sizeof(newPosition));
@@ -363,14 +402,14 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      //Capture
      if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack))
      {
-          newPosition[y+direction][x-1] = 1-playerIsBlack;
+          newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
           memcpy(newPosition,position,sizeof(newPosition));     
      }
      if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack))
      {
-          newPosition[y+direction][x+1] = 1-playerIsBlack;
+          newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
           memcpy(newPosition,position,sizeof(newPosition));
@@ -379,7 +418,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      //En Passante
      if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y][x-1]) ^ playerIsBlack))
      {
-          newPosition[y+direction][x-1] = position[y][x];
+          newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
           newPosition[y][x-1] = -1;
           head = movePiece(newPosition,head,king);
@@ -388,7 +427,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      }
      if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack))
      {
-          newPosition[y+direction][x+1] = position[y][x];
+          newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
           newPosition[y][x+1] = -1;
           head = movePiece(newPosition,head,king);
@@ -808,27 +847,87 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
 
      return root;
 }
+#pragma endregion
 
+#pragma region // Move Choosing
+
+void computer_move(board current){
+     boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
+     memcpy(state.position,current,sizeof(board));
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
+
+     int index = rand() % BLL_length(possibleMoves);
+     BLL_item(possibleMoves,index,current);
+
+     freeBLL(possibleMoves);
+}
+
+#pragma endregion
+
+
+#pragma region //Input Processing
+
+piece read_piece(){
+     char p, x, y;
+     piece ret;
+     printf("Make your move: ");
+     scanf("%c%c%c",&p,&x,&y);
+     printf("Received p: %c, x: %c, y: %c\n",p,x,y);
+     for(int i = 0;i<NUM_PIECES;i++){
+          if(pieces_chars[i] == p){
+               ret.type = i;
+          }
+     }
+     for(int i = 0;i<BOARD_SIZE;i++){
+          if(x_chars[i] == x){
+               ret.x = i;
+          }
+     }
+     for(int i = 0;i<BOARD_SIZE;i++){
+          if(y_chars[i] == y){
+               ret.y = i;
+          }
+     }
+     printf("Moved to: %d, x: %d, y: %d\n",ret.type,ret.x,ret.y);
+     
+     return ret;
+}
+
+
+void human_move(board current){
+     piece to_move = read_piece();
+     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
+     memcpy(state.position,current,sizeof(board));
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
+     boardLinkedList *head = possibleMoves;
+     while(head != 0){
+          if(GET_TYPE(head->current[to_move.y][to_move.x]) == to_move.type){
+               memcpy(current,head->current,sizeof(board));
+               break;
+          }
+          head = head->next;
+     }
+
+     freeBLL(possibleMoves);
+     return;
+}
+
+#pragma endregion
 
 
 int main()
 {
-     boardPosition initial = {.blackMove = false, .position = INITIAL_BOARD_STATE, .eval = 0x7000};
-     boardLinkedList *initialMoves = getPossibleMovesFromBoard(initial.position,initial.blackMove);
-     printBLL(*initialMoves);
+     setlocale(LC_ALL, "");     
+     srand(time(NULL));
+     //printBLL(initialMoves);
+     board current = INITIAL_BOARD_STATE;
 
-     // boardLinkedList *secondMoves = getPossibleMovesFromBoard(initialMoves->next->current,false);
-     
-     // printf("\n\nSecond Move from initialMoves next\n\n");
-     // boardLinkedList *thirdMoves = getPossibleMovesFromBoard(secondMoves->next->current,true);
-     // printBLL(*secondMoves);
-     // freeBLL(secondMoves);
-     // printf("\n\nThird Move from secondMoves next\n\n");
-     // printBLL(*thirdMoves);
-     // freeBLL(thirdMoves);
-
+     while(true){
+          computer_move(current);
+          printBoard(current);
+          human_move(current);
+          sleep(10);
+     }
      
 
-     freeBLL(initialMoves);
-     // printf("%i",sizeof(boardPosition));
 }
