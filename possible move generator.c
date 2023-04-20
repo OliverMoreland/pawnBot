@@ -11,8 +11,9 @@
 #include <locale.h>
 #define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 #define BOARD_SIZE 8
-#define COMPUTER_IS_WHITE true
+#define COMPUTER_IS_WHITE false
 // For final
+
 #define INITIAL_BOARD_STATE          \
      {                               \
           { 17, 3, 5, 9,15, 5, 3, 17}, \
@@ -24,8 +25,18 @@
           { 0, 0, 0, 0, 0, 0, 0, 0}, \
           { 16, 2, 4, 8,14, 4, 2, 16}  \
      }
-
-
+/*
+#define INITIAL_BOARD_STATE          \
+     {                               \
+          {17, 3, 5, 9,15, 5, 3, 17}, \
+          { 1, 1, 1,-1, 1, 1, 1, 1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1, 4,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          { 0, 0, 0, 0, 0, 0, 0, 0}, \
+          {16, 2, 4, 8,14, 4, 2, 16}  \
+     }*/
 /* 
 
 #define INITIAL_BOARD_STATE          \
@@ -97,8 +108,9 @@ const char pieces_chars[6] = {'p','k','b','r','Q','K'};
 const char x_chars[8] = {'a','b','c','d','e','f','g','h'};
 const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 
-//Flipped for different terminals: const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
-const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
+//Flipped for different terminals: 
+const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
+//const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
 
 const short pointValues[6] = {1, 3, 3, 5, 9};
 #pragma endregion
@@ -261,7 +273,7 @@ bool inCheck(board position,piece king){
                if(xToCheck >= BOARD_SIZE || xToCheck < 0){
                     break;
                }
-               int yToCheck = king.x + i*yDirection;
+               int yToCheck = king.y + i*yDirection;
                if(yToCheck>=BOARD_SIZE || yToCheck < 0)
                {
                     break;
@@ -276,9 +288,9 @@ bool inCheck(board position,piece king){
                     ||
                     (
                          GET_TYPE(pieceToCheck) != BISHOP 
-                         ||
+                         &&
                          GET_TYPE(pieceToCheck) != QUEEN
-                         ||
+                         &&
                          (
                               i == 1
                               &&
@@ -289,6 +301,7 @@ bool inCheck(board position,piece king){
                               )
                          )
                     )
+                    
                ){
                     break;
                }
@@ -321,19 +334,20 @@ bool inCheck(board position,piece king){
                     ||
                     (
                          GET_TYPE(pieceToCheck) != ROOK 
-                         ||
+                         &&
                          GET_TYPE(pieceToCheck) != QUEEN
-                         ||
+                    )
+                    ||
+                    (
+                         i == 1
+                         &&
                          (
-                              i == 1
-                              &&
-                              (
-                                   GET_TYPE(pieceToCheck) != KING
-                                   ||
-                                   GET_TYPE(pieceToCheck) != U_KING
-                              )
+                              GET_TYPE(pieceToCheck) != KING
+                              ||
+                              GET_TYPE(pieceToCheck) != U_KING
                          )
                     )
+                    
                ){
                     break;
                }
@@ -357,6 +371,7 @@ bool inCheck(board position,piece king){
      ){
           return true;
      }
+
      return false;
      
 }
@@ -634,7 +649,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     break;
                }
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[yToCheck][xToCheck] = position[y][x];
+               newPosition[yToCheck][xToCheck] = QUEEN*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
                if(!IS_EMPTY(position[yToCheck][xToCheck]))
@@ -675,7 +690,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     break;
                }
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[yToCheck][xToCheck] = 7-playerIsBlack;
+               newPosition[yToCheck][xToCheck] = QUEEN*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
                //printf("%i, %i\n",xToCheck,yToCheck);
@@ -844,7 +859,9 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
                
           }
      }
-     
+     if(head == root){
+          printf("getPossibleMoves returned null");
+     }
 
      return root;
 }
@@ -853,10 +870,14 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
 #pragma region // Move Choosing
 
 void computer_move(board current){
-     boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
+     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
-
+     if(possibleMoves->next == 0){
+          printf("0 comp moves generated");
+          free(possibleMoves);
+          return;
+     }
      int index = rand() % BLL_length(possibleMoves);
      BLL_item(possibleMoves,index,current);
 
@@ -866,7 +887,7 @@ void computer_move(board current){
 #pragma endregion
 
 
-#pragma region //Input Processing
+#pragma region // Human Input Processing
 
 piece read_piece(){
      char p, x, y;
@@ -896,40 +917,47 @@ piece read_piece(){
 
 
 void human_move(board current){
-     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
+     boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
-     boardLinkedList *head = possibleMoves;
-     while(true){
+     while(true){ // repeat so players can retry if they make an illegal move
+          boardLinkedList *head = possibleMoves;
           piece to_move = read_piece();
           if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES){
-               printf("Error: illegal move\n");
+               printf("Error: illegal move - reading\n");
                continue;
           }
           while(head->next != 0){
+               int piece_to_check = head->current[to_move.y][to_move.x];
                if(
-                    GET_TYPE(head->current[to_move.y][to_move.x]) == to_move.type 
-                    || 
-                    (GET_TYPE(head->current[to_move.y][to_move.x]) == PAWN && to_move.type == PAWN_M2) 
-                    || 
-                    (GET_TYPE(head->current[to_move.y][to_move.x]) == PAWN_M2 && to_move.type == PAWN) 
-                    || 
-                    (GET_TYPE(head->current[to_move.y][to_move.x]) == ROOK && to_move.type == U_ROOK) 
-                    || 
-                    (GET_TYPE(head->current[to_move.y][to_move.x]) == KING && to_move.type == U_KING))
+                    IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
+                    &&
+                    (
+                         GET_TYPE(piece_to_check) == to_move.type 
+                         || 
+                         (GET_TYPE(piece_to_check) == PAWN && to_move.type == PAWN_M2) 
+                         || 
+                         (GET_TYPE(piece_to_check) == PAWN_M2 && to_move.type == PAWN) 
+                         || 
+                         (GET_TYPE(piece_to_check) == ROOK && to_move.type == U_ROOK) 
+                         || 
+                         (GET_TYPE(piece_to_check) == KING && to_move.type == U_KING)
+                    )
+               )
                {
                     memcpy(current,head->current,sizeof(board));
                     freeBLL(possibleMoves);
                     return;
+               }else{
+                    printf("%d %d %d\n",piece_to_check,GET_TYPE(piece_to_check), to_move.type);
                }
                head = head->next;
           }
           if(head->next == 0){
-               printf("Error: illegal move\n");
+               printf("Error: illegal move - generating\n");
           }
      }
-
-     
+     freeBLL(possibleMoves);
 }
 
 #pragma endregion
@@ -941,14 +969,19 @@ int main()
      srand(time(NULL));
      //printBLL(initialMoves);
      board current = INITIAL_BOARD_STATE;
-
+     if(!COMPUTER_IS_WHITE){
+          printBoard(current);
+          human_move(current);
+          printBoard(current);
+     }
      while(true){
           computer_move(current);
           printBoard(current);
           human_move(current);
-
+          printBoard(current);
           sleep(0.1);
      }
-     
+     //printBoard(current);
+     //printf("\n%d\n",inCheck(current,findPiece(current,U_KING*2+1)));
 
 }
