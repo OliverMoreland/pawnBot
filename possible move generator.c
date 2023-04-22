@@ -292,11 +292,11 @@ bool inCheck(board position,piece king){
                          GET_TYPE(pieceToCheck) != QUEEN
                          &&
                          (
-                              i == 1
-                              &&
+                              i != 1
+                              ||
                               (
                                    GET_TYPE(pieceToCheck) != KING
-                                   ||
+                                   &&
                                    GET_TYPE(pieceToCheck) != U_KING
                               )
                          )
@@ -336,18 +336,18 @@ bool inCheck(board position,piece king){
                          GET_TYPE(pieceToCheck) != ROOK 
                          &&
                          GET_TYPE(pieceToCheck) != QUEEN
-                    )
-                    ||
-                    (
-                         i == 1
                          &&
+                    
                          (
-                              GET_TYPE(pieceToCheck) != KING
+                              i != 1
                               ||
-                              GET_TYPE(pieceToCheck) != U_KING
+                              (
+                                   GET_TYPE(pieceToCheck) != KING
+                                   &&
+                                   GET_TYPE(pieceToCheck) != U_KING
+                              )
                          )
                     )
-                    
                ){
                     break;
                }
@@ -378,7 +378,10 @@ bool inCheck(board position,piece king){
 
 boardLinkedList* movePiece(board newBoard,boardLinkedList *head, piece king){
      if(inCheck(newBoard,king))
+     {
+          printf("check ");
           return head;
+     }
      return appendToBLL(newBoard, head);
 }
 
