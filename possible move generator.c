@@ -25,18 +25,19 @@
           { 0, 0, 0, 0, 0, 0, 0, 0}, \
           { 16, 2, 4, 8,14, 4, 2, 16}  \
      }
+
 /*
 #define INITIAL_BOARD_STATE          \
      {                               \
-          {17, 3, 5, 9,15, 5, 3, 17}, \
-          { 1, 1, 1,-1, 1, 1, 1, 1}, \
-          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {17, 3, 5, 9,15,-1,-1, 6}, \
+          {-1,-1, 1, 1,-1, 1, 1,-1}, \
+          { 1, 1,-1,-1,-1,-1,-1, 1}, \
           {-1, 4,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1, 8, 0, 0,-1,-1}, \
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
-          {-1,-1,-1,-1,-1,-1,-1,-1}, \
-          { 0, 0, 0, 0, 0, 0, 0, 0}, \
-          {16, 2, 4, 8,14, 4, 2, 16}  \
-     }*/
+          { 0, 0, 0,-1,-1,-1, 0, 0}, \
+          {16, 2, 4,-1,14, 4, 2, 16}  \
+     }
 /* 
 
 #define INITIAL_BOARD_STATE          \
@@ -112,7 +113,7 @@ const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
 //const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
 
-const short pointValues[6] = {1, 3, 3, 5, 9};
+const int pointValues[6] = {1, 3, 3, 5, 9};
 #pragma endregion
 
 #pragma region // Board, and BLL and Position Processing
@@ -184,7 +185,7 @@ void freeBLL(boardLinkedList *toFree){
 boardLinkedList* appendToBLL(board toAppend,boardLinkedList *head)
 {
      
-     memcpy( head->current,toAppend, sizeof( head->current ) );
+     memcpy( head->current,toAppend, sizeof(board) );
      head->next = (boardLinkedList *)malloc(sizeof(boardLinkedList));
      head = head->next;
      head->next = 0;
@@ -252,7 +253,8 @@ bool inCheck(board position,piece king){
           //First conditional checks if it is a knight.
           //Second conditional checks if the two the piece and the king are the same color. 
           if(
-          (GET_TYPE(position[yToCheck][xToCheck]) != KNIGHT)
+          (
+          GET_TYPE(position[yToCheck][xToCheck]) != KNIGHT)
           ||
           !(IS_BLACK(position[yToCheck][xToCheck]) ^ IS_BLACK(king.type))
           )
@@ -319,7 +321,7 @@ bool inCheck(board position,piece king){
                if(xToCheck >= BOARD_SIZE || xToCheck < 0){
                     break;
                }
-               int yToCheck = king.x + i*yDirection;
+               int yToCheck = king.y + i*yDirection;
                if(yToCheck>=BOARD_SIZE || yToCheck < 0)
                {
                     break;
@@ -379,7 +381,7 @@ bool inCheck(board position,piece king){
 boardLinkedList* movePiece(board newBoard,boardLinkedList *head, piece king){
      if(inCheck(newBoard,king))
      {
-          printf("check ");
+          //printf("check ");
           return head;
      }
      return appendToBLL(newBoard, head);
@@ -404,10 +406,23 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
      if(IS_EMPTY(position[y+direction][x]))
      {
           //Standard Movement
-          newPosition[y+direction][x] = PAWN*2+playerIsBlack;
-          newPosition[y][x] = -1;
-          head = movePiece(newPosition,head,king);
-          memcpy(newPosition,position,sizeof(newPosition));
+          if(y+direction == BOARD_SIZE || y+direction == 0){
+               newPosition[y][x] = -1;
+               newPosition[y+direction][x] = KNIGHT*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x] = BISHOP*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x] = ROOK*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x] = QUEEN*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }else {
+               newPosition[y+direction][x] = PAWN*2+playerIsBlack;
+               newPosition[y][x] = -1;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }
           //Double Movement
           if(y == 6-5*playerIsBlack &&  IS_EMPTY(position[y+direction*2][x]))
           {
@@ -495,7 +510,7 @@ boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinke
           
 
           */
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -543,7 +558,7 @@ boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinke
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -594,12 +609,12 @@ boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedL
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[yToCheck][xToCheck] = 7-playerIsBlack;
+               newPosition[yToCheck][xToCheck] = ROOK*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
                //printf("%i, %i\n",xToCheck,yToCheck);
@@ -647,7 +662,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -688,7 +703,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -717,7 +732,7 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
      for(int j = 0;j<4;j++){
           xToCheck = x + (((j&2)>>1)*2-1);
           if(xToCheck >= BOARD_SIZE || xToCheck < 0){
-               continue;;
+               continue;
           }
           yToCheck = y + ((j&1)*2-1);
           if(yToCheck>=BOARD_SIZE || yToCheck < 0)
@@ -725,34 +740,38 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
                continue;
           }
           // Works same as in other functions
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
+          king.x = xToCheck;
+          king.y = yToCheck;
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[yToCheck][xToCheck] = position[y][x];
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
 
      }
+     
      for(int j = 0;j<4;j++){
 
-          xToCheck = x + (((j&2)>>1)*2-1);
+          xToCheck = x + (j & 1) * (j-2);
           if(xToCheck >= BOARD_SIZE || xToCheck < 0){
                continue;
           }
-          yToCheck = y + ((j&1)*2-1);
+          yToCheck = y + (!(j & 1)) * (j-1);
           if(yToCheck>=BOARD_SIZE || yToCheck < 0)
           {
                continue;
           }
           // Works same as in other functions
 
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
-
+          king.x = xToCheck;
+          king.y = yToCheck;
           memcpy(newPosition,position,sizeof(newPosition));
           newPosition[yToCheck][xToCheck] = position[y][x];
           newPosition[y][x] = -1;
@@ -774,7 +793,7 @@ boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinked
           if(GET_TYPE(position[y][0]) == U_ROOK && IS_EMPTY(position[y][x-1]) && IS_EMPTY(position[y][x-2])){
                board newPosition;
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[y][x-1] = newPosition[y][x];
+               newPosition[y][x-1] = KING*2+IS_BLACK(king.type);
                king.x--;
                newPosition[y][x] = -1;
                if(!inCheck(newPosition,king))
@@ -794,7 +813,7 @@ boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinked
           if(GET_TYPE(position[y][BOARD_SIZE-1]) == U_ROOK && IS_EMPTY(position[y][x+1]) && IS_EMPTY(position[y][x+2])){
                board newPosition;
                memcpy(newPosition,position,sizeof(newPosition));
-               newPosition[y][x+1] = newPosition[y][x];
+               newPosition[y][x+1] = KING*2+IS_BLACK(king.type);
                king.x++;
                newPosition[y][x] = -1;
                if(!inCheck(newPosition,king))
@@ -836,6 +855,7 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
      boardLinkedList *root;
      boardLinkedList *head;
      root = (boardLinkedList *)malloc(sizeof(boardLinkedList));
+     root->next = 0;
      head = root;
      piece king = findPiece(position, KING*2+playerIsBlack);
      if(IS_EMPTY(king.type)){
@@ -862,29 +882,30 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
                
           }
      }
-     if(head == root){
+     /*if(head == root){
           printf("getPossibleMoves returned null");
-     }
+     }*/
 
      return root;
 }
 #pragma endregion
 
-#pragma region // Move Choosing
+#pragma region // Computer Move Choosing
 
-void computer_move(board current){
+int computer_move(board current){
      boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
      if(possibleMoves->next == 0){
-          printf("0 comp moves generated");
+          //printf("0 comp moves generated");
           free(possibleMoves);
-          return;
+          return 1;
      }
      int index = rand() % BLL_length(possibleMoves);
      BLL_item(possibleMoves,index,current);
 
      freeBLL(possibleMoves);
+     return 0;
 }
 
 #pragma endregion
@@ -919,14 +940,18 @@ piece read_piece(){
 }
 
 
-void human_move(board current){
+int human_move(board current){
      boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
+     if(possibleMoves->next == 0){
+          freeBLL(possibleMoves);
+          return 1;
+     }
      while(true){ // repeat so players can retry if they make an illegal move
           boardLinkedList *head = possibleMoves;
           piece to_move = read_piece();
-          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES){
+          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && IS_BLACK(current[to_move.y][to_move.x]) == COMPUTER_IS_WHITE)){
                printf("Error: illegal move - reading\n");
                continue;
           }
@@ -950,7 +975,7 @@ void human_move(board current){
                {
                     memcpy(current,head->current,sizeof(board));
                     freeBLL(possibleMoves);
-                    return;
+                    return 0;
                }else{
                     printf("%d %d %d\n",piece_to_check,GET_TYPE(piece_to_check), to_move.type);
                }
@@ -961,6 +986,7 @@ void human_move(board current){
           }
      }
      freeBLL(possibleMoves);
+     return 0;
 }
 
 #pragma endregion
@@ -977,14 +1003,39 @@ int main()
           human_move(current);
           printBoard(current);
      }
+     
      while(true){
-          computer_move(current);
+          if(computer_move(current)){
+               piece king = findPiece(current, KING*2+1-COMPUTER_IS_WHITE);
+               if(IS_EMPTY(king.type)){
+                    king = findPiece(current, U_KING*2+1-COMPUTER_IS_WHITE);
+               }
+               if(inCheck(current,king))
+                    printf("Checkmate - YOU WIN!!!\n");
+               else
+                    printf("Stalemate - Draw\n");
+               break;
+          }
           printBoard(current);
-          human_move(current);
+          if(human_move(current)){
+               piece king = findPiece(current, KING*2+COMPUTER_IS_WHITE);
+               if(IS_EMPTY(king.type)){
+                    king = findPiece(current, U_KING*2+COMPUTER_IS_WHITE);
+               }
+               if(inCheck(current,king))
+                    printf("Checkmate - you lose :(\n");
+               else
+                    printf("Stalemate - Draw\n");
+               break;
+          }
+          
           printBoard(current);
           sleep(0.1);
      }
-     //printBoard(current);
-     //printf("\n%d\n",inCheck(current,findPiece(current,U_KING*2+1)));
 
+
+     printf("Final Position: \n");
+     printBoard(current);
+     //printf("\n%d\n",inCheck(current,findPiece(current,U_KING*2+1)));
+     return 0;
 }
