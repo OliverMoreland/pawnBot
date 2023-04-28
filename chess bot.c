@@ -54,7 +54,9 @@
 typedef enum { false, true } bool;
 
 /*Notes:
--E000 < eval < E000
+-1000 < eval < 1000
+-eval = good for black 
++eval = good for white
 
 Piece indexes:
 -1 = Nothing
@@ -112,7 +114,7 @@ const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
 //const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
 
-const int pointValues[6] = {1, 3, 3, 5, 9};
+const int pointValues[6] = {1, 3, 3, 5, 9,1000,1,1000,5};
 #pragma endregion
 
 #pragma region // Board, and BLL and Position Processing
@@ -147,7 +149,7 @@ void printBoard (board toPrint){
 typedef struct boardPosition
 {
      bool blackMove;
-     short eval;
+     int eval;
      board position;
      struct boardPosition *children;
 } boardPosition;
@@ -897,8 +899,46 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
 
 #pragma region // Computer Move Choosing
 
+int eval_board(board to_eval){
+     int eval = 0;
+     for (int y = 0; y < BOARD_SIZE; y++)
+     {
+          for (int x = 0; x < BOARD_SIZE; x++)
+          {
+               int piece = to_eval[y][x];
+               //Check if square is empty
+               if (IS_EMPTY(piece))
+               {
+                    continue;
+               }
+               // Could optimize if necessary
+               if(IS_BLACK(piece)){
+                    eval -= pointValues[GET_TYPE(piece)];
+               }else{
+                    eval += pointValues[GET_TYPE(piece)];
+
+               }
+          }
+     }
+     return eval;
+}
+
+int minimax(int depth, int max_depth, board current){
+     if(depth == 0)
+          return eval_board(current);
+     
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_IS_WHITE+(depth&1));
+     boardLinkedList *head;
+     int min = 10000;
+     while(head->next != 0){
+
+          head = head->next;
+     }
+}
+
+
 int computer_move(board current){
-     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x7000};
+     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x0};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
      if(possibleMoves->next == 0){
@@ -946,9 +986,7 @@ piece read_piece(){
 
 
 int human_move(board current){
-     boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
-     memcpy(state.position,current,sizeof(board));
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_IS_WHITE);
      if(possibleMoves->next == 0){
           freeBLL(possibleMoves);
           return 1;
