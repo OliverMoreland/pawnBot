@@ -11,9 +11,10 @@
 #include <locale.h>
 #define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 #define BOARD_SIZE 8
+#define DEPTH 2
 #define COMPUTER_IS_WHITE false
 // For final
-/*
+
 #define INITIAL_BOARD_STATE          \
      {                               \
           { 17, 3, 5, 9,15, 5, 3, 17}, \
@@ -24,8 +25,8 @@
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           { 0, 0, 0, 0, 0, 0, 0, 0}, \
           { 16, 2, 4, 8,14, 4, 2, 16}  \
-     }
-*/
+     }/*
+*//*
 #define INITIAL_BOARD_STATE          \
      {                               \
           {17, 3, 5, 9,15,-1,-1,-1}, \
@@ -55,8 +56,8 @@ typedef enum { false, true } bool;
 
 /*Notes:
 -1000 < eval < 1000
--eval = good for black 
-+eval = good for white
+-eval = good for human 
++eval = good for bot
 
 Piece indexes:
 -1 = Nothing
@@ -114,7 +115,7 @@ const char y_chars[8] = {'8','7','6','5','4','3','2','1'};
 const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
 //const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
 
-const int pointValues[6] = {1, 3, 3, 5, 9,1000,1,1000,5};
+const int pointValues[9] = {1, 3, 3, 5, 9,1000,1,1000,5};
 #pragma endregion
 
 #pragma region // Board, and BLL and Position Processing
@@ -125,7 +126,7 @@ const int pointValues[6] = {1, 3, 3, 5, 9,1000,1,1000,5};
 typedef int board[BOARD_SIZE][BOARD_SIZE];
 
 void printBoard (board toPrint){
-     system("clear");
+     //system("clear");
      printf("   a  b  c  d  e  f  g  h \n");
      for (int y = 0; y < BOARD_SIZE; y++)
      {
@@ -911,8 +912,8 @@ int eval_board(board to_eval){
                {
                     continue;
                }
-               // Could optimize if necessary
-               if(IS_BLACK(piece)){
+               // Could optimize if necessary, but this is more readable
+               if(IS_BLACK(piece) == COMPUTER_IS_WHITE){
                     eval -= pointValues[GET_TYPE(piece)];
                }else{
                     eval += pointValues[GET_TYPE(piece)];
@@ -922,19 +923,45 @@ int eval_board(board to_eval){
      }
      return eval;
 }
-
-int minimax(int depth, int max_depth, board current){
-     if(depth == 0)
+int minimax_odd(int depth, board current);
+int minimax_even(int depth, board current){
+     if(depth == 0){
+          //printf("Evaled board at %d\n",eval_board(current));
           return eval_board(current);
-     
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_IS_WHITE+(depth&1));
-     boardLinkedList *head;
-     int min = 10000;
+     }
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_IS_WHITE);
+     boardLinkedList *head = possibleMoves;
+     int min =  100000;
      while(head->next != 0){
-
+          int eval = minimax_odd(depth-1,head->current);
+          if(eval < min)
+               min = eval;
           head = head->next;
      }
+     freeBLL(possibleMoves);
+     return min;
 }
+
+int minimax_odd(int depth, board current){
+     if(depth == 0){
+          //printf("Evaled board at %d\n",eval_board(current));
+          return eval_board(current);
+     }
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_IS_WHITE);
+     boardLinkedList *head = possibleMoves;
+     //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_IS_WHITE);
+     int max = -100000;
+     
+     while(head->next != 0){
+          int eval = minimax_even(depth-1,head->current);
+          if(eval > max)
+               max = eval;
+          head = head->next;
+     }
+     freeBLL(possibleMoves);
+     return max;
+}
+
 
 
 int computer_move(board current){
@@ -946,9 +973,24 @@ int computer_move(board current){
           free(possibleMoves);
           return 1;
      }
-     int index = rand() % BLL_length(possibleMoves);
-     BLL_item(possibleMoves,index,current);
-
+     //int index = rand() % BLL_length(possibleMoves);
+     //BLL_item(possibleMoves,index,current);
+     boardLinkedList *head = possibleMoves;
+     int max = -100000;
+     while(head->next != 0){
+          board to_explore;
+          memcpy(to_explore,head->current,sizeof(board));
+          int eval = minimax_even((DEPTH-1)*2,to_explore);
+          if(eval > max){
+               max = eval;
+               //printf("Y - eval: %d\n",eval);
+               memcpy(current,head->current,sizeof(board));
+          }else if(eval == max && rand() % 100 > 20){
+               memcpy(current,head->current,sizeof(board));
+          }
+          head = head->next;
+     }
+     printf("evaled at %d\n",max);
      freeBLL(possibleMoves);
      return 0;
 }
@@ -1048,7 +1090,7 @@ int main()
           printBoard(current);
           human_move(current);
           printBoard(current);
-          sleep(1);
+          //sleep(1);
 
      }
      while(true){
@@ -1078,7 +1120,7 @@ int main()
           }
           appendToBLL(current,history);
           printBoard(current);
-          sleep(1);
+          //sleep(1);
      }
 
 
