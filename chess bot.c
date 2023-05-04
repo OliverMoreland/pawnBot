@@ -11,9 +11,22 @@
 #include <locale.h>
 #define ARR_SIZE(arr) ( sizeof((arr)) / sizeof((arr[0])) )
 #define BOARD_SIZE 8
-#define DEPTH 2
+#define DEPTH 3
 #define COMPUTER_IS_WHITE false
 // For final
+/*
+#define INITIAL_BOARD_STATE          \
+     {                               \
+          {7, 3, 5, -1, 15, -1, 3, -1}, \
+          {-1, 1, 1, 1, -1, -1, -1, -1}, \
+          {-1, -1, -1, -1, 1, -1, 1, 7}, \
+          {-1, 1, -1, 0, -1, 1, -1, -1}, \
+          {-1, -1, 14, -1, -1, 5, -1, 0}, \
+          {-1, 6, -1, -1, -1, -1, -1, -1}, \
+          {0, -1, 0, -1,9, -1, -1, -1} , \
+          {-1, -1, -1, -1, -1, 2, -1, -1}  \
+     }
+//*/
 
 #define INITIAL_BOARD_STATE          \
      {                               \
@@ -25,15 +38,16 @@
           {-1,-1,-1,-1,-1,-1,-1,-1}, \
           { 0, 0, 0, 0, 0, 0, 0, 0}, \
           { 16, 2, 4, 8,14, 4, 2, 16}  \
-     }/*
-*//*
+     }
+//*/
+/*
 #define INITIAL_BOARD_STATE          \
      {                               \
-          {17, 3, 5, 9,15,-1,-1,-1}, \
-          { 1,-1, 1,-1,-1,-1, 1,-1}, \
-          {-1,-1,-1,-1,-1, 1,-1, 17}, \
-          {-1, 1,-1, 1, 1,-1,-1, 1}, \
-          {-1,-1,-1, 0, 0,-1,-1,-1}, \
+          {17, 3, 5, 9,15,-1,-1,17}, \
+          { 1, 1, 1, 1, 1, 1, 1,-1}, \
+          {-1,-1,-1,-1,-1,-1,-1, -1}, \
+          {-1,-1,-1,-1,-1,-1,-1,-1}, \
+          {-1,-1,-1, 0, 0,-1,-1, 1}, \
           {-1,-1, 2,-1,-1, 2,-1,-1}, \
           { 0, 0, 0,-1,-1,-1, 0, 0}, \
           {16,-1, 4,8,14, 4,-1, 16}  \
@@ -126,7 +140,7 @@ const int pointValues[9] = {1, 3, 3, 5, 9,1000,1,1000,5};
 typedef int board[BOARD_SIZE][BOARD_SIZE];
 
 void printBoard (board toPrint){
-     //system("clear");
+     system("clear");
      printf("   a  b  c  d  e  f  g  h \n");
      for (int y = 0; y < BOARD_SIZE; y++)
      {
@@ -147,6 +161,25 @@ void printBoard (board toPrint){
 
 }
 
+void printBoardCopy (board toPrint){
+     //system("clear");
+     printf("\n\n");
+     for (int y = 0; y < BOARD_SIZE; y++)
+     {
+          printf("{");
+          for (int x = 0; x < BOARD_SIZE; x++)
+          {
+               //printf("%d ",toPrint[y][x]+1);
+
+               printf(" %d,",toPrint[y][x]);
+          }
+          printf(" }, \\ \n",8-y);
+     }
+     printf("\n\n");
+
+}
+
+
 typedef struct boardPosition
 {
      bool blackMove;
@@ -161,6 +194,9 @@ typedef struct boardLinkedList
      struct boardLinkedList *next;
 } boardLinkedList;
 
+boardLinkedList *HISTORY;
+boardLinkedList *HISTORY_HEAD;
+
 int BLL_length(boardLinkedList *BLL){
      if(BLL->next == 0){
           return 0;
@@ -174,6 +210,15 @@ void BLL_item(boardLinkedList *BLL,int index, board out){
           return;
      }
      BLL_item(BLL->next,index-1,out);
+}
+
+void print_BLL_item(boardLinkedList *BLL, int index){
+     board toPrint;
+     BLL_item(BLL,index,toPrint);
+     printf("\nNumbers:\n\n");
+     printBoardCopy(toPrint);
+     printf("\nRendered:\n\n");
+     printBoard(toPrint);
 }
 
 void freeBLL(boardLinkedList *toFree){
@@ -408,9 +453,10 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
 
      if(IS_EMPTY(position[y+direction][x]))
      {
+          newPosition[y][x] = -1;
           //Standard Movement
           if(y+direction == BOARD_SIZE || y+direction == 0){
-               newPosition[y][x] = -1;
+               
                newPosition[y+direction][x] = KNIGHT*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
                newPosition[y+direction][x] = BISHOP*2+playerIsBlack;
@@ -422,7 +468,6 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                memcpy(newPosition,position,sizeof(newPosition));
           }else {
                newPosition[y+direction][x] = PAWN*2+playerIsBlack;
-               newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
                memcpy(newPosition,position,sizeof(newPosition));
           }
@@ -437,23 +482,51 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           }
      }
      //Capture
-     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack))
+     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack) && x-1 != 0)
      {
-          newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
-          head = movePiece(newPosition,head,king);
-          memcpy(newPosition,position,sizeof(newPosition));     
+          //Standard Movement
+          if(y+direction == BOARD_SIZE || y+direction == 0){
+               
+               newPosition[y+direction][x-1] = KNIGHT*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x-1] = BISHOP*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x-1] = ROOK*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x-1] = QUEEN*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }else {
+               newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }
      }
-     if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack))
+     if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
      {
-          newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
-          head = movePiece(newPosition,head,king);
-          memcpy(newPosition,position,sizeof(newPosition));
+          //Standard Movement
+          if(y+direction == BOARD_SIZE || y+direction == 0){
+               
+               newPosition[y+direction][x+1] = KNIGHT*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x+1] = BISHOP*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x+1] = ROOK*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               newPosition[y+direction][x+1] = QUEEN*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }else {
+               newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
+               head = movePiece(newPosition,head,king);
+               memcpy(newPosition,position,sizeof(newPosition));
+          }
 
      }
      //En Passante
-     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y][x-1]) ^ playerIsBlack))
+     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y][x-1]) ^ playerIsBlack) && x-1 != 0)
      {
           newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
@@ -462,7 +535,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           memcpy(newPosition,position,sizeof(newPosition));
 
      }
-     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack))
+     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
      {
           newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
@@ -1083,13 +1156,14 @@ int main()
      srand(time(NULL));
      //printBLL(initialMoves);
      board current = INITIAL_BOARD_STATE;
-     boardLinkedList *history = (boardLinkedList *) malloc(sizeof(boardLinkedList));
-
-     appendToBLL(current,history);
+     HISTORY = (boardLinkedList *) malloc(sizeof(boardLinkedList));
+     HISTORY_HEAD = HISTORY;
+     HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
      if(!COMPUTER_IS_WHITE){
           printBoard(current);
           human_move(current);
           printBoard(current);
+          HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
           //sleep(1);
 
      }
@@ -1105,7 +1179,7 @@ int main()
                     printf("Stalemate - Draw\n");
                break;
           }
-          appendToBLL(current,history);
+          HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
           printBoard(current);
           if(human_move(current)){
                piece king = findPiece(current, KING*2+COMPUTER_IS_WHITE);
@@ -1118,7 +1192,7 @@ int main()
                     printf("Stalemate - Draw\n");
                break;
           }
-          appendToBLL(current,history);
+          HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
           printBoard(current);
           //sleep(1);
      }
@@ -1126,7 +1200,7 @@ int main()
 
      printf("Final Position: \n");
      printBoard(current);
-     freeBLL(history);
+     freeBLL(HISTORY);
      //printf("\n%d\n",inCheck(current,findPiece(current,U_KING*2+1)));
      return 0;
 }
