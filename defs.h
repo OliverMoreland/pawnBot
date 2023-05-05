@@ -1,6 +1,6 @@
 #ifndef DEFS_H
 #define DEFS_H
-
+#include "initial_board.h"
 #define BOARD_SIZE 8
 #define DEPTH 3
 #define COMPUTER_IS_WHITE false

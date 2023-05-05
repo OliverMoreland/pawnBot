@@ -3,16 +3,9 @@
 
 #include "structs.h"
 
-const char pieces_chars[6] = {'p','k','b','r','Q','K'};
-const char X_CHARS[8] = {'a','b','c','d','e','f','g','h'};
-const char Y_CHARS[8] = {'8','7','6','5','4','3','2','1'};
-boardLinkedList *HISTORY;
-boardLinkedList *HISTORY_HEAD;
-//Flipped for different terminals: 
-const int pieceChars[19] = {0x0020,0x265F,0x2659, 0x265E,0x2658, 0x265D,0x2657, 0x265C,0x2656, 0x265B,0x2655, 0x265A,0x2654, 0x265F,0x2659, 0x265A,0x2654, 0x265C,0x2656};
-//const int pieceChars[19] = {0x0020,0x2659,0x265F, 0x2658,0x265E, 0x2657, 0x265D, 0x2656,0x265C, 0x2655,0x265B, 0x2654,0x265A, 0x2659,0x265F, 0x2654,0x265A, 0x2656,0x265C};
+extern boardLinkedList *HISTORY;
+extern boardLinkedList *HISTORY_HEAD;
 
-const int pointValues[9] = {1, 3, 3, 5, 9,1000,1,1000,5};
 
 
 #endif

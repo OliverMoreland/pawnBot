@@ -44,3 +44,13 @@ boardLinkedList* appendToBLL(board toAppend,boardLinkedList *head)
 }
 
 void printBLL(boardLinkedList *root){
+     if(root->next == 0){
+          printf("\nDONE\n");
+          return;
+     }
+     printf("\n\n\nBoard\n\n");
+     printBoard(root->current);
+     printBLL(root->next);
+
+
+}
