@@ -1,4 +1,8 @@
-#include "structs.h"
+#include "headers/structs.h"
+#include <string.h>
+#include <stdio.h>
+#include "headers/board_piece.h"
+#include <stdlib.h>
 int BLL_length(boardLinkedList *BLL){
      if(BLL->next == 0){
           return 0;

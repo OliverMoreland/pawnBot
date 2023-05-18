@@ -1,12 +1,15 @@
 
-#include "structs.h"
-#include "defs.h"
-#include "globals.h"
-#include "moves.h"
+#include "headers/structs.h"
+#include "headers/defs.h"
+#include "headers/globals.h"
+#include "headers/moves.h"
+#include "headers/macros.h"
+#include "headers/bll.h"
+#include <string.h>
 #include <stdio.h>
 const char INPUT_PIECE_CHARS[6] = {'p','k','b','r','Q','K'};
-extern const char X_CHARS[8] = {'a','b','c','d','e','f','g','h'};
-extern const char Y_CHARS[8] = {'8','7','6','5','4','3','2','1'};
+const char X_CHARS[8] = {'a','b','c','d','e','f','g','h'};
+const char Y_CHARS[8] = {'8','7','6','5','4','3','2','1'};
 
 piece read_piece(){
      char p, x, y;

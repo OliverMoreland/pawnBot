@@ -1,9 +1,13 @@
 
-#include "structs.h"
-#include "globals.h"
-#include "macros.h"
-#include "board_piece.h"
-#include "defs.h"
+#include "headers/structs.h"
+#include "headers/globals.h"
+#include "headers/macros.h"
+#include "headers/board_piece.h"
+#include "headers/defs.h"
+
+#include <string.h>
+#include <stdlib.h>
+
 boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedList *head, bool playerIsBlack, piece king)
 {
      int direction = FORWARD(position[y][x]);
@@ -485,6 +489,10 @@ boardLinkedList *(*functionsThatGetPossibleMoves[])(board position, int x, int y
      &getPossibleMovesRook
      };
 
+boardLinkedList *getPossibleMovesFromPiece(board position, int x, int y, boardLinkedList *head, bool playerIsBlack, piece king){
+     functionsThatGetPossibleMoves[GET_TYPE(position[y][x])](position, x, y, head, playerIsBlack,king);
+}
+
 boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
 {
      boardLinkedList *root;
@@ -504,20 +512,20 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
      {
           for (int x = 0; x < BOARD_SIZE; x++)
           {
-               int piece = position[y][x];
+               int cpiece = position[y][x];
                //Check if square is empty
-               if (IS_EMPTY(piece))
+               if (IS_EMPTY(cpiece))
                {
                     continue;
                }
                //Check if piece belongs to opposite player
-               if (IS_BLACK(piece) ^ playerIsBlack)
+               if (IS_BLACK(cpiece) ^ playerIsBlack)
                {
                     continue;
 
                }
 
-               head = functionsThatGetPossibleMoves[GET_TYPE(piece)](position, x, y, head, playerIsBlack,king);
+               head = functionsThatGetPossibleMoves[GET_TYPE(cpiece)](position, x, y, head, playerIsBlack,king);
                
           }
      }

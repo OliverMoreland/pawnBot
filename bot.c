@@ -1,14 +1,15 @@
-#include "structs.h"
-#include "defs.h"
-#include "globals.h"
-#include "macros.h"
-#include "moves.h"
-#include "bll.h"
+#include "headers/structs.h"
+#include "headers/defs.h"
+#include "headers/globals.h"
+#include "headers/macros.h"
+#include "headers/moves.h"
+#include "headers/bll.h"
 #include <stdlib.h>
-
+#include <string.h>
+#include <stdio.h>
 const int POINT_VALUES[9] = {1, 3, 3, 5, 9,1000,1,1000,5};
 
-int eval_board(board to_eval){
+int eval_board(board to_eval, bool computer_is_black){
      int eval = 0;
      for (int y = 0; y < BOARD_SIZE; y++)
      {
@@ -21,27 +22,27 @@ int eval_board(board to_eval){
                     continue;
                }
                // Could optimize if necessary, but this is more readable
-               if(IS_BLACK(piece) == COMPUTER_IS_WHITE){
-                    eval -= POINT_VALUES[GET_TYPE(piece)];
-               }else{
+               if(IS_BLACK(piece) == computer_is_black){
                     eval += POINT_VALUES[GET_TYPE(piece)];
+               }else{
+                    eval -= POINT_VALUES[GET_TYPE(piece)];
 
                }
           }
      }
      return eval;
 }
-int minimax_odd(int depth, board current);
-int minimax_even(int depth, board current){
+int minimax_odd(int depth, board current, bool computer_is_black);
+int minimax_even(int depth, board current, bool computer_is_black){
      if(depth == 0){
           //printf("Evaled board at %d\n",eval_board(current));
-          return eval_board(current);
+          return eval_board(current,computer_is_black);
      }
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!computer_is_black);
      boardLinkedList *head = possibleMoves;
      int min =  100000;
      while(head->next != 0){
-          int eval = minimax_odd(depth-1,head->current);
+          int eval = minimax_odd(depth-1,head->current,computer_is_black);
           if(eval < min)
                min = eval;
           head = head->next;
@@ -50,18 +51,18 @@ int minimax_even(int depth, board current){
      return min;
 }
 
-int minimax_odd(int depth, board current){
+int minimax_odd(int depth, board current, bool computer_is_black){
      if(depth == 0){
           //printf("Evaled board at %d\n",eval_board(current));
-          return eval_board(current);
+          return eval_board(current,computer_is_black);
      }
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,computer_is_black);
      boardLinkedList *head = possibleMoves;
      //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_IS_WHITE);
      int max = -100000;
      
      while(head->next != 0){
-          int eval = minimax_even(depth-1,head->current);
+          int eval = minimax_even(depth-1,head->current,computer_is_black);
           if(eval > max)
                max = eval;
           head = head->next;
@@ -72,8 +73,8 @@ int minimax_odd(int depth, board current){
 
 
 
-int computer_move(board current){
-     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x0};
+int computer_move(board current, bool computer_is_black){
+     boardPosition state = {.blackMove = computer_is_black, .eval = 0x0};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
      if(possibleMoves->next == 0){
@@ -88,7 +89,7 @@ int computer_move(board current){
      while(head->next != 0){
           board to_explore;
           memcpy(to_explore,head->current,sizeof(board));
-          int eval = minimax_even((DEPTH-1)*2,to_explore);
+          int eval = minimax_even((DEPTH-1)*2,to_explore,computer_is_black);
           if(eval > max){
                max = eval;
                //printf("Y - eval: %d\n",eval);
