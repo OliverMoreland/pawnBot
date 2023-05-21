@@ -15,4 +15,6 @@
 #define U_KING 7
 #define U_ROOK 8
 #define NUM_PIECE_TYPES 6
+
+#define NUM_HIDDEN_NEURONS 64
 #endif

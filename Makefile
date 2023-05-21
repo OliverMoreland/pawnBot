@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -fPIC
+CFLAGS = -fPIC -g
 HD = headers/
 OBJS = main.o bot.o input.o board_piece.o bll.o moves.o
 TARGET = chessbot

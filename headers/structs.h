@@ -13,6 +13,13 @@ typedef struct boardPosition
      board position;
      struct boardPosition *children;
 } boardPosition;
+typedef struct neuron {
+     int bias;
+     int activation;
+     int weights[NUM_HIDDEN_NEURONS];
+
+
+} neuron;
 
 typedef struct boardLinkedList
 {

@@ -12,7 +12,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
 {
      int direction = FORWARD(position[y][x]);
      board newPosition;
-     memcpy(newPosition,position,sizeof(newPosition));
+     memcpy(newPosition,position,sizeof(board));
 
      if(IS_EMPTY(position[y+direction][x]))
      {
@@ -28,11 +28,11 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                head = movePiece(newPosition,head,king);
                newPosition[y+direction][x] = QUEEN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }else {
                newPosition[y+direction][x] = PAWN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }
           //Double Movement
           if(y == 6-5*playerIsBlack &&  IS_EMPTY(position[y+direction*2][x]))
@@ -40,7 +40,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                newPosition[y+direction*2][x] = PAWN_M2*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
 
           }
      }
@@ -59,11 +59,11 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                head = movePiece(newPosition,head,king);
                newPosition[y+direction][x-1] = QUEEN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }else {
                newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }
      }
      if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
@@ -80,11 +80,11 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                head = movePiece(newPosition,head,king);
                newPosition[y+direction][x+1] = QUEEN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }else {
                newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
                head = movePiece(newPosition,head,king);
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
           }
 
      }
@@ -95,7 +95,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           newPosition[y][x] = -1;
           newPosition[y][x-1] = -1;
           head = movePiece(newPosition,head,king);
-          memcpy(newPosition,position,sizeof(newPosition));
+          memcpy(newPosition,position,sizeof(board));
 
      }
      if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
@@ -104,7 +104,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           newPosition[y][x] = -1;
           newPosition[y][x+1] = -1;
           head = movePiece(newPosition,head,king);
-          memcpy(newPosition,position,sizeof(newPosition));     
+          memcpy(newPosition,position,sizeof(board));     
      }
      
 
@@ -153,7 +153,7 @@ boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinke
           {
                continue;
           }
-          memcpy(newPosition,position,sizeof(newPosition));
+          memcpy(newPosition,position,sizeof(board));
           newPosition[yToCheck][xToCheck] = position[y][x];
           newPosition[y][x] = -1;
           
@@ -201,7 +201,7 @@ boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinke
                {
                     break;
                }
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[yToCheck][xToCheck] = position[y][x];
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
@@ -252,7 +252,7 @@ boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedL
                {
                     break;
                }
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[yToCheck][xToCheck] = ROOK*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
@@ -305,7 +305,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                {
                     break;
                }
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[yToCheck][xToCheck] = QUEEN*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
@@ -346,7 +346,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                {
                     break;
                }
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[yToCheck][xToCheck] = QUEEN*2+playerIsBlack;
                newPosition[y][x] = -1;
                head = movePiece(newPosition,head,king);
@@ -385,7 +385,7 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
           }
           king.x = xToCheck;
           king.y = yToCheck;
-          memcpy(newPosition,position,sizeof(newPosition));
+          memcpy(newPosition,position,sizeof(board));
           newPosition[yToCheck][xToCheck] = KING*2+playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
@@ -411,7 +411,7 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
           }
           king.x = xToCheck;
           king.y = yToCheck;
-          memcpy(newPosition,position,sizeof(newPosition));
+          memcpy(newPosition,position,sizeof(board));
           newPosition[yToCheck][xToCheck] = KING*2+playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
@@ -424,14 +424,14 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
 }
 boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinkedList *head, bool playerIsBlack, piece king)
 {
+     board newPosition;
      // Do Normal King Moves
      head = getPossibleMovesKing(position, x, y, head, playerIsBlack,king);
 
      if(!inCheck(position,king)){ // No castling out of check
           // Queenside Castle
           if(GET_TYPE(position[y][0]) == U_ROOK && IS_EMPTY(position[y][x-1]) && IS_EMPTY(position[y][x-2])){
-               board newPosition;
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[y][x-1] = KING*2+IS_BLACK(king.type);
                king.x--;
                newPosition[y][x] = -1;
@@ -451,7 +451,7 @@ boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinked
           // Kingside Castle
           if(GET_TYPE(position[y][BOARD_SIZE-1]) == U_ROOK && IS_EMPTY(position[y][x+1]) && IS_EMPTY(position[y][x+2])){
                board newPosition;
-               memcpy(newPosition,position,sizeof(newPosition));
+               memcpy(newPosition,position,sizeof(board));
                newPosition[y][x+1] = KING*2+IS_BLACK(king.type);
                king.x++;
                newPosition[y][x] = -1;

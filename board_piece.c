@@ -68,6 +68,9 @@ piece findPiece(board position, int pieceToFind){
 }
 
 bool inCheck(board position,piece king){
+     if(GET_TYPE(king.type) != KING && GET_TYPE(king.type) != U_KING){
+          return false;
+     }
      // Check Knights
      for(int i = 0;i<8;i++){
           /*

@@ -3,6 +3,20 @@
         "cmath": "c",
         "limits": "c",
         "*.tcc": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "structs.h": "c",
+        "wchar.h": "c",
+        "globals.h": "c",
+        "board_piece.h": "c",
+        "moves.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "defs.h": "c",
+        "bll.h": "c",
+        "macros.h": "c",
+        "initial_board.h": "c",
+        "input.h": "c",
+        "bot.h": "c"
     }
 }
