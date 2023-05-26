@@ -31,7 +31,7 @@ piece read_piece(){
 int human_move(board current){
      boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
+     boardLinkedList *possibleMoves = get_possible_moves_from_board(state.position,state.blackMove);
      if(possibleMoves->next == 0){
           freeBLL(possibleMoves);
           return 1;

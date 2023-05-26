@@ -1,29 +1,30 @@
 CC = gcc
-CFLAGS = -fPIC -g
 HD = headers/
-OBJS = main.o bot.o input.o board_piece.o bll.o moves.o
-TARGET = chessbot
+CFLAGS = -fPIC -g -Iheaders
+SRCDIR = src/
+OBJDIR = obj/
+LIBDIR = lib/
+TARGET = $(LIBDIR)libchessbot.so  # Output shared library filename
+OTARGET = chessbot
 DEPS = $(HD)structs.h $(HD)globals.h $(HD)defs.h $(HD)initial_board.h $(HD)macros.h
+SOURCES = $(SRCDIR)main.c $(SRCDIR)bot.c $(SRCDIR)input.c $(SRCDIR)board_piece.c $(SRCDIR)bll.c $(SRCDIR)moves.c
+OBJS = $(patsubst $(SRCDIR)%.c,$(OBJDIR)%.o,$(SOURCES))
+
+.PHONY: all clean
+
+all: $(TARGET) $(OTARGET)
+
 $(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -shared -o $@ $^
+
+$(OTARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-main.o: main.c $(HD)bot.h $(HD)input.h $(HD)board_piece.h $(HD)bll.h $(HD)moves.h $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
 
-bot.o: bot.c $(HD)bot.h $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-input.o: input.c $(HD)input.h $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-board_piece.o: board_piece.c $(HD)board_piece.h $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-bll.o: bll.c  $(HD)bll.h $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-moves.o: moves.c $(HD)moves.h $(HD)bll.h $(DEPS)
+$(OBJDIR)%.o: $(SRCDIR)%.c $(DEPS)
+	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJDIR)
+	rm -f $(TARGET)

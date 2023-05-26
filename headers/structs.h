@@ -6,6 +6,13 @@
 
 typedef int board[BOARD_SIZE][BOARD_SIZE];
 
+typedef struct coordLL
+{
+     int x;
+     int y;
+     struct coordLL *next;
+} coordLL;
+
 typedef struct boardPosition
 {
      bool blackMove;

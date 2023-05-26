@@ -3,7 +3,7 @@
 #include "initial_board.h"
 #define BOARD_SIZE 8
 #define DEPTH 2
-#define COMPUTER_IS_WHITE true
+#define COMPUTER_IS_WHITE false
 
 #define PAWN 0
 #define KNIGHT 1
