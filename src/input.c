@@ -52,6 +52,8 @@ int human_move_gui(board current, int ox, int oy, int x, int y){
      while(head->next != 0){
           int piece_to_check = head->current[to_move.y][to_move.x];
           if(
+               IS_EMPTY(head->current[oy][ox])
+               &&
                IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
                &&
                (
@@ -71,6 +73,7 @@ int human_move_gui(board current, int ox, int oy, int x, int y){
                ||
                IS_BLACK(current[y][x]) != COMPUTER_IS_WHITE
                )
+
           )
           {
                //printf("moved %d,%d -> %d,%d\n",ox,oy,x,y);

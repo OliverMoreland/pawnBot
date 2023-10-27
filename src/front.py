@@ -2,7 +2,7 @@
 import ctypes
 import os
 import tkinter as tk
-
+playerIsBlack = False
 init_board = [                              
           [ 17, 3, 5, 9,15, 5, 3, 17], 
           [ 1, 1, 1, 1, 1, 1, 1, 1], 
