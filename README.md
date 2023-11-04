@@ -2,6 +2,8 @@
 This is a chess bot that I am making as a project.
 Current (ish) state is: basic minimax bot
 
+
+
 ## Notes:
 
 -1000 < eval < 1000
@@ -50,3 +52,4 @@ White is down
 
 
 Boards are [UP->DOWN = 0 - 7][LEFT-RIGHT = 0-7]
+

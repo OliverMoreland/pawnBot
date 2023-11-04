@@ -2,5 +2,7 @@
 #define MOVES_H
 #include "structs.h"
 boardLinkedList *get_possible_moves_from_board(board position, bool playerIsBlack);
-coordLL *get_possible_moves_from_piece(board position, int x, int y, bool playerIsBlack);
+coordLL *get_coords_from_piece(board position, int x, int y, bool playerIsBlack);
+boardLinkedList *get_possible_moves_from_piece(board position, int x, int y);
+
 #endif

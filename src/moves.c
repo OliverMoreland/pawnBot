@@ -46,7 +46,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           }
      }
      //Capture
-     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack) && x-1 != 0)
+     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack) && x != 0)
      {
           newPosition[y][x] = -1;
           //Standard Movement
@@ -490,7 +490,7 @@ boardLinkedList *(*functionsThatGetPossibleMoves[])(board position, int x, int y
      &getPossibleMovesRook
      };
 
-coordLL *get_possible_moves_from_piece(board position, int x, int y, bool playerIsBlack){
+coordLL *get_coords_from_piece(board position, int x, int y, bool playerIsBlack){
 
      boardLinkedList *root;
      boardLinkedList *head;
@@ -512,6 +512,7 @@ coordLL *get_possible_moves_from_piece(board position, int x, int y, bool player
           return moves;
      }
      functionsThatGetPossibleMoves[GET_TYPE(position[y][x])](position, x, y, head, playerIsBlack,king);
+     
      while(head->next != 0){
           int cx,cy;
           for (cy = 0; cy < BOARD_SIZE; cy++){
@@ -550,7 +551,33 @@ coordLL *get_possible_moves_from_piece(board position, int x, int y, bool player
           head = head->next;
 
      }
+     
      return moves;
+}
+
+
+boardLinkedList *get_possible_moves_from_piece(board position, int x, int y){
+     boardLinkedList *root;
+     boardLinkedList *head;
+     bool playerIsBlack = IS_BLACK(position[y][x]);
+     root = (boardLinkedList *)malloc(sizeof(boardLinkedList));
+     root->next = 0;
+     head = root;
+     piece pawn_to_timeout_en_pass = find_piece(position, PAWN_M2*2+playerIsBlack);
+     if(!IS_EMPTY(pawn_to_timeout_en_pass.type)){
+          position[pawn_to_timeout_en_pass.y][pawn_to_timeout_en_pass.x] = PAWN*2+playerIsBlack;
+     }
+     piece king = find_piece(position, KING*2+playerIsBlack);
+     if(IS_EMPTY(king.type)){
+          king = find_piece(position, U_KING*2+playerIsBlack);
+     }
+     if(IS_EMPTY(king.type)){
+          return root;
+     }
+     functionsThatGetPossibleMoves[GET_TYPE(position[y][x])](position, x, y, head, playerIsBlack,king);
+     
+     
+     return root;
 }
 
 boardLinkedList *get_possible_moves_from_board(board position, bool playerIsBlack)

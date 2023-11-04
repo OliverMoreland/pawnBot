@@ -53,7 +53,7 @@ int main()
           system("clear");
           print_board(current);
           sleep(0.9);
-          if(computer_move(current,COMPUTER_IS_WHITE)){
+          if(!HUMAN_CONTROL && (current,COMPUTER_IS_WHITE)){
                piece king = find_piece(current, KING*2+COMPUTER_IS_WHITE);
                if(IS_EMPTY(king.type)){
                     king = find_piece(current, U_KING*2+COMPUTER_IS_WHITE);
@@ -63,6 +63,9 @@ int main()
                else
                     printf("Stalemate - Draw\n");
                break;
+          }
+          if(HUMAN_CONTROL){
+               human_move(current);
           }
           HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
           system("clear");

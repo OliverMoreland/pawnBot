@@ -2,9 +2,9 @@
 #define DEFS_H
 #include "initial_board.h"
 #define BOARD_SIZE 8
-#define DEPTH 2
+#define DEPTH 1
 #define COMPUTER_IS_WHITE false
-
+#define HUMAN_CONTROL true
 #define PAWN 0
 #define KNIGHT 1
 #define BISHOP 2

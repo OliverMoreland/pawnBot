@@ -1,8 +1,10 @@
 #! /bin/python
 import ctypes
 import os
+from time import sleep
 import tkinter as tk
 playerIsBlack = False
+
 init_board = [                              
           [ 17, 3, 5, 9,15, 5, 3, 17], 
           [ 1, 1, 1, 1, 1, 1, 1, 1], 
@@ -13,7 +15,17 @@ init_board = [
           [ 0, 0, 0, 0, 0, 0, 0, 0], 
           [ 16, 2, 4, 8,14, 4, 2, 16] 
      ]
-
+'''
+init_board = [                              
+          [ 17, 3, 5, 9,15, 5, 3, 17], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [ 16, 2, 4, 8,14, 4, 2, 16] 
+     ]'''
 BOARD_SIZE = 8
 
 Board = ctypes.c_int * (BOARD_SIZE * BOARD_SIZE)
@@ -53,13 +65,13 @@ for i, row in enumerate(init_board):
 # coding: utf-8
 import tkinter as tk
 from PIL import ImageTk, Image, ImageDraw
-
-boardSize = 8
-squareSize = 100
-padding = 50
-moveRadius = 17
-
 root = tk.Tk()
+boardSize = 8
+padding = 50
+
+squareSize = int((root.winfo_screenheight()-padding*3)/8)
+
+moveRadius = 17
 root.geometry(str(squareSize*boardSize+padding*2)+"x"+str(squareSize*boardSize+padding*2))
 root.title("Chess Board")
 
@@ -172,6 +184,9 @@ draw.ellipse([(0, 0), (moveRadius * 2, moveRadius * 2)], fill=circle_color)
 # Convert the image to Tkinter-compatible format
 moveCircle = ImageTk.PhotoImage(image)
 
+def computerMove():
+    chessBotLib.computer_move(board, True)
+    drawBoard(board)
 
 def move_start(event):
     widget = event.widget
@@ -223,8 +238,8 @@ def move_end(event):
             print('end')
         #chessBotLib.print_board(board)
         widget.coords(item,col * squareSize + squareSize/2,row * squareSize + squareSize/2)
-        chessBotLib.computer_move(board, True)
         drawBoard(board)
+        canvas.after(30,computerMove)
     else:
         widget.coords(item,oCol * squareSize + squareSize/2,oRow * squareSize + squareSize/2)
 

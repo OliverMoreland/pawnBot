@@ -20,6 +20,7 @@ typedef struct boardPosition
      board position;
      struct boardPosition *children;
 } boardPosition;
+
 typedef struct neuron {
      int bias;
      int activation;
@@ -33,6 +34,8 @@ typedef struct boardLinkedList
      board current;
      struct boardLinkedList *next;
 } boardLinkedList;
+
+
 
 typedef struct piece {
      int x;

@@ -38,42 +38,37 @@ piece read_piece(){
      return ret;
 }
 
-int human_move_gui(board current, int ox, int oy, int x, int y){
-     boardLinkedList *possibleMoves = get_possible_moves_from_board(current,COMPUTER_IS_WHITE);
+int human_move_gui(board current, int ox, int oy, int x, int y, int piece){
+     boardLinkedList *possibleMoves = get_possible_moves_from_piece(current,ox,oy);
+     
      if(possibleMoves->next == 0){
           freeBLL(possibleMoves);
           return 1;
      }
      boardLinkedList *head = possibleMoves;
-     piece to_move;
-     to_move.type = GET_TYPE(current[oy][ox]);
-     to_move.x = x;
-     to_move.y = y;
+     int moved_type = GET_TYPE(piece); // pass type as argument to account for promotion
      while(head->next != 0){
-          int piece_to_check = head->current[to_move.y][to_move.x];
+          int piece_to_check = head->current[y][x];
+          
           if(
-               IS_EMPTY(head->current[oy][ox])
+               IS_EMPTY(head->current[oy][ox]) // The piece has moved
                &&
-               IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
-               &&
-               (
-                    GET_TYPE(piece_to_check) == to_move.type 
-                    || 
-                    (GET_TYPE(piece_to_check) == PAWN && to_move.type == PAWN_M2) 
-                    || 
-                    (GET_TYPE(piece_to_check) == PAWN_M2 && to_move.type == PAWN) 
-                    || 
-                    (GET_TYPE(piece_to_check) == ROOK && to_move.type == U_ROOK) 
-                    || 
-                    (GET_TYPE(piece_to_check) == KING && to_move.type == U_KING)
-               )
+               IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE // It's our piece
                &&
                (
-               GET_TYPE(current[y][x]) != to_move.type
-               ||
-               IS_BLACK(current[y][x]) != COMPUTER_IS_WHITE
-               )
+                    GET_TYPE(piece_to_check) == moved_type
+                    || 
+                    (GET_TYPE(piece_to_check) == PAWN && moved_type == PAWN_M2) 
+                    || 
+                    (GET_TYPE(piece_to_check) == PAWN_M2 && moved_type == PAWN) 
+                    || 
+                    (GET_TYPE(piece_to_check) == ROOK && moved_type == U_ROOK) 
+                    || 
+                    (GET_TYPE(piece_to_check) == KING && moved_type == U_KING)
 
+               )
+               &&
+               current[y][x] != piece // We are not detecting a piece already there
           )
           {
                //printf("moved %d,%d -> %d,%d\n",ox,oy,x,y);
