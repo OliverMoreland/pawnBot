@@ -45,7 +45,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           }
      }
      //Capture
-     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack) && x-1 != 0)
+     if(!IS_EMPTY(position[y+direction][x-1]) && (GET_COLOR(position[y+direction][x-1]) ^ playerIsBlack) && x-1 != 0)
      {
           newPosition[y][x] = -1;
           //Standard Movement
@@ -66,7 +66,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
                memcpy(newPosition,position,sizeof(board));
           }
      }
-     if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
+     if(!IS_EMPTY(position[y+direction][x+1]) && (GET_COLOR(position[y+direction][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
      {
           newPosition[y][x] = -1;
           //Standard Movement
@@ -89,7 +89,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
 
      }
      //En Passante
-     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y][x-1]) ^ playerIsBlack) && x-1 != 0)
+     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (GET_COLOR(position[y][x-1]) ^ playerIsBlack) && x-1 != 0)
      {
           newPosition[y+direction][x-1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
@@ -98,7 +98,7 @@ boardLinkedList *getPossibleMovesPawn(board position, int x, int y, boardLinkedL
           memcpy(newPosition,position,sizeof(board));
 
      }
-     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
+     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (GET_COLOR(position[y][x+1]) ^ playerIsBlack) && x+1 != BOARD_SIZE)
      {
           newPosition[y+direction][x+1] = PAWN*2+playerIsBlack;
           newPosition[y][x] = -1;
@@ -149,7 +149,7 @@ boardLinkedList *getPossibleMovesKnight(board position, int x, int y, boardLinke
           
 
           */
-          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -197,7 +197,7 @@ boardLinkedList *getPossibleMovesBishop(board position, int x, int y, boardLinke
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -248,7 +248,7 @@ boardLinkedList *getPossibleMovesRook(board position, int x, int y, boardLinkedL
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -301,7 +301,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -342,7 +342,7 @@ boardLinkedList *getPossibleMovesQueen(board position, int x, int y, boardLinked
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -379,7 +379,7 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
                continue;
           }
           // Works same as in other functions
-          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -405,7 +405,7 @@ boardLinkedList *getPossibleMovesKing(board position, int x, int y, boardLinkedL
           }
           // Works same as in other functions
 
-          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!IS_EMPTY(position[yToCheck][xToCheck]) && !(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -432,7 +432,7 @@ boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinked
           // Queenside Castle
           if(GET_TYPE(position[y][0]) == U_ROOK && IS_EMPTY(position[y][x-1]) && IS_EMPTY(position[y][x-2])){
                memcpy(newPosition,position,sizeof(board));
-               newPosition[y][x-1] = KING*2+IS_BLACK(king.type);
+               newPosition[y][x-1] = KING*2+GET_COLOR(king.type);
                king.x--;
                newPosition[y][x] = -1;
                if(!inCheck(newPosition,king))
@@ -452,7 +452,7 @@ boardLinkedList *getPossibleMovesUKing(board position, int x, int y, boardLinked
           if(GET_TYPE(position[y][BOARD_SIZE-1]) == U_ROOK && IS_EMPTY(position[y][x+1]) && IS_EMPTY(position[y][x+2])){
                board newPosition;
                memcpy(newPosition,position,sizeof(board));
-               newPosition[y][x+1] = KING*2+IS_BLACK(king.type);
+               newPosition[y][x+1] = KING*2+GET_COLOR(king.type);
                king.x++;
                newPosition[y][x] = -1;
                if(!inCheck(newPosition,king))
@@ -519,7 +519,7 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
                     continue;
                }
                //Check if piece belongs to opposite player
-               if (IS_BLACK(cpiece) ^ playerIsBlack)
+               if (GET_COLOR(cpiece) ^ playerIsBlack)
                {
                     continue;
 

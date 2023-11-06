@@ -1,7 +1,7 @@
 # pawnBot
 This is a chess bot that I am making as a project.
 Current (ish) state is: basic minimax bot
-
+Pawn Position: a3 - Version 1.0 Completed
 
 
 ## Notes:
