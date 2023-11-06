@@ -544,7 +544,7 @@ coordLL *get_coords_from_piece(board position, int x, int y, bool playerColor){
                               &&
                               GET_TYPE(piece_to_check) == QUEEN
                               &&
-                              cy == PROMOTION_ROW_HUMAN
+                              GET_COLOR(piece_to_check) == playerColor
                               &&
                               position[cy][cx] != MAKE_PIECE(QUEEN,HUMAN_COLOR)
                          )

@@ -4,7 +4,7 @@ import os
 from time import sleep
 import tkinter as tk
 playerIsBlack = False
-'''
+
 init_board = [                              
           [ 17, 3, 5, 9,15, 5, 3, 17], 
           [ 1, 1, 1, 1, 1, 1, 1, 1], 
@@ -25,7 +25,7 @@ init_board = [
           [-1,-1,-1,-1,-1,-1,-1,-1], 
           [ 0, 0, 0, 0, 0, 0, 0, 0],
           [ 16, 2, 4, 8,14, 4, 2, 16] 
-     ]
+     ]'''
 BOARD_SIZE = 8
 
 Board = ctypes.c_int * (BOARD_SIZE * BOARD_SIZE)
