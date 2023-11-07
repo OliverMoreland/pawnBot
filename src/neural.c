@@ -1,32 +1,68 @@
+
+#define NUM_HIDDEN_NEURONS 100
+#define NUM_HIDDEN_LAYERS 3
+#define NUM_INPUTS 708
+#define NUM_OUTPUTS 3
 #include <time.h>
 #include <stdlib.h>
-#define NUM_HIDDEN_NEURONS 64
-#define NUM_HIDDEN_LAYERS
+#include <math.h>
+
+
+#define PI 3.141592653589793238462
+
 typedef struct neuron {
-     int bias;
-     int activation;
-     int weights[NUM_HIDDEN_NEURONS];
-
-
+    double weights[NUM_HIDDEN_NEURONS];
+    double bias;
+    double output;
 } neuron;
-
-int relu(int sum){
-    if(sum > 0){
-        return sum;
-    }
-    return 0;
-}
-int d_relu(int sum){
-    if(sum > 0){
-        return 1;
-    }
-    return 0;
-}
-int input[64];
-
-
-int main()
+typedef struct ineuron {
+    double weights[NUM_INPUTS];
+    double bias;
+    double output;
+} ineuron;
+typedef struct network {
+    ineuron input_layer[NUM_HIDDEN_NEURONS];
+    neuron  hidden_layers[NUM_HIDDEN_LAYERS-1][NUM_HIDDEN_NEURONS];
+    neuron  output_layer[NUM_OUTPUTS];
+} network;
+network current_network;
+double r2()
 {
-    srand(time(NULL));
+    return (double)rand() / (double)RAND_MAX ;
+}
+double weight_init_value(int index){
+    if(index % 2 == 1){
+        return sqrt(-2*log(r2()))*cos(2*PI*r2());
+    }else{
+        return sqrt(-2*log(r2()))*sin(2*PI*r2());
+    }
+}
+int init_network(network network){
+    double INIT_MULTIPLIER = sqrt(2.0/NUM_INPUTS);
+    for (int i = 0; i < NUM_HIDDEN_NEURONS; i++)
+    {
+        network.input_layer[i].bias = 0;
+        for(int j = 0; j < NUM_INPUTS;j++){
+            network.input_layer[i].weights[j] = weight_init_value(j) * INIT_MULTIPLIER;
+        }
+    }
+    for (int i = 0; i < NUM_HIDDEN_LAYERS-1; i++)
+    {
+        for (int j = 0; j < NUM_HIDDEN_NEURONS; j++)
+        {
+            network.hidden_layers[i][j].bias = 0;
+            for (int k = 0; k < NUM_HIDDEN_NEURONS; k++)
+            {
+                network.hidden_layers[i][j].weights[k] = weight_init_value(k) * INIT_MULTIPLIER;
+            }
+            
+        }
+        
+    }
     
+    
+
+}
+int main(){
+    srand(time(NULL));  
 }
