@@ -304,7 +304,7 @@ bool inCheck(board position,piece king){
           (
           GET_TYPE(position[yToCheck][xToCheck]) != KNIGHT)
           ||
-          !(IS_BLACK(position[yToCheck][xToCheck]) ^ IS_BLACK(king.type))
+          !(GET_COLOR(position[yToCheck][xToCheck]) ^ GET_COLOR(king.type))
           )
           {
                continue;
@@ -334,7 +334,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != BISHOP 
@@ -380,7 +380,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != ROOK 
@@ -410,13 +410,13 @@ bool inCheck(board position,piece king){
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x-1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x-1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x-1]) ^ GET_COLOR(king.type)
           )
           ||
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x+1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x+1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x+1]) ^ GET_COLOR(king.type)
           )
      ){
           return true;
@@ -462,7 +462,7 @@ int eval_board(board to_eval){
                     continue;
                }
                // Could optimize if necessary, but this is more readable
-               if(IS_BLACK(piece) == COMPUTER_IS_WHITE){
+               if(GET_COLOR(piece) == COMPUTER_COLOR){
                     eval -= POINT_VALUES[GET_TYPE(piece)];
                }else{
                     eval += POINT_VALUES[GET_TYPE(piece)];
@@ -478,7 +478,7 @@ int minimax_even(int depth, board current){
           //printf("Evaled board at %d\n",eval_board(current));
           return eval_board(current);
      }
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_COLOR);
      boardLinkedList *head = possibleMoves;
      int min =  100000;
      while(head->next != 0){
@@ -496,9 +496,9 @@ int minimax_odd(int depth, board current){
           //printf("Evaled board at %d\n",eval_board(current));
           return eval_board(current);
      }
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,!COMPUTER_COLOR);
      boardLinkedList *head = possibleMoves;
-     //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_IS_WHITE);
+     //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_COLOR);
      int max = -100000;
      
      while(head->next != 0){
@@ -514,7 +514,7 @@ int minimax_odd(int depth, board current){
 
 
 int computer_move(board current){
-     boardPosition state = {.blackMove = !COMPUTER_IS_WHITE, .eval = 0x0};
+     boardPosition state = {.blackMove = !COMPUTER_COLOR, .eval = 0x0};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = getPossibleMovesFromBoard(state.position,state.blackMove);
      if(possibleMoves->next == 0){
@@ -577,7 +577,7 @@ piece read_piece(){
 
 
 int human_move(board current){
-     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = getPossibleMovesFromBoard(current,COMPUTER_COLOR);
      if(possibleMoves->next == 0){
           freeBLL(possibleMoves);
           return 1;
@@ -585,14 +585,14 @@ int human_move(board current){
      while(true){ // repeat so players can retry if they make an illegal move
           boardLinkedList *head = possibleMoves;
           piece to_move = read_piece();
-          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && IS_BLACK(current[to_move.y][to_move.x]) == COMPUTER_IS_WHITE)){
+          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && GET_COLOR(current[to_move.y][to_move.x]) == COMPUTER_COLOR)){
                printf("Error: illegal move - reading\n");
                continue;
           }
           while(head->next != 0){
                int piece_to_check = head->current[to_move.y][to_move.x];
                if(
-                    IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
+                    GET_COLOR(piece_to_check) == COMPUTER_COLOR
                     &&
                     (
                          GET_TYPE(piece_to_check) == to_move.type 
@@ -635,7 +635,7 @@ int main()
      HISTORY = (boardLinkedList *) malloc(sizeof(boardLinkedList));
      HISTORY_HEAD = HISTORY;
      HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
-     if(!COMPUTER_IS_WHITE){
+     if(!COMPUTER_COLOR){
           printBoard(current);
           human_move(current);
           printBoard(current);
@@ -645,9 +645,9 @@ int main()
      }
      while(true){
           if(computer_move(current)){
-               piece king = findPiece(current, KING*2+1-COMPUTER_IS_WHITE);
+               piece king = findPiece(current, KING*2+1-COMPUTER_COLOR);
                if(IS_EMPTY(king.type)){
-                    king = findPiece(current, U_KING*2+1-COMPUTER_IS_WHITE);
+                    king = findPiece(current, U_KING*2+1-COMPUTER_COLOR);
                }
                if(inCheck(current,king))
                     printf("Checkmate - YOU WIN!!!\n");
@@ -658,9 +658,9 @@ int main()
           HISTORY_HEAD = appendToBLL(current,HISTORY_HEAD);
           printBoard(current);
           if(human_move(current)){
-               piece king = findPiece(current, KING*2+COMPUTER_IS_WHITE);
+               piece king = findPiece(current, KING*2+COMPUTER_COLOR);
                if(IS_EMPTY(king.type)){
-                    king = findPiece(current, U_KING*2+COMPUTER_IS_WHITE);
+                    king = findPiece(current, U_KING*2+COMPUTER_COLOR);
                }
                if(inCheck(current,king))
                     printf("Checkmate - you lose :(\n");

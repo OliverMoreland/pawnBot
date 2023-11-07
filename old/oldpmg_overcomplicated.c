@@ -221,7 +221,7 @@ bool inCheck(board position,piece king){
           if(
           (GET_TYPE(position[yToCheck][xToCheck]) != KNIGHT)
           ||
-          !(IS_BLACK(position[yToCheck][xToCheck]) ^ IS_BLACK(king.type))
+          !(GET_COLOR(position[yToCheck][xToCheck]) ^ GET_COLOR(king.type))
           )
           {
                continue;
@@ -251,7 +251,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != BISHOP 
@@ -296,7 +296,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != ROOK 
@@ -325,13 +325,13 @@ bool inCheck(board position,piece king){
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x-1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x-1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x-1]) ^ GET_COLOR(king.type)
           )
           ||
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x+1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x+1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x+1]) ^ GET_COLOR(king.type)
           )
      ){
           return true;
@@ -377,14 +377,14 @@ boardLinkedListSegment *getPossibleMovesPawn(board position, int x, int y, board
           }
      }
      //Capture
-     if(!IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y+direction][x-1]) ^ playerIsBlack))
+     if(!IS_EMPTY(position[y+direction][x-1]) && (GET_COLOR(position[y+direction][x-1]) ^ playerIsBlack))
      {
           newPosition[y+direction][x-1] = 1-playerIsBlack;
           newPosition[y][x] = -1;
           head = movePiece(newPosition,head,king);
           memcpy(newPosition,position,sizeof(newPosition));     
      }
-     if(!IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y+direction][x+1]) ^ playerIsBlack))
+     if(!IS_EMPTY(position[y+direction][x+1]) && (GET_COLOR(position[y+direction][x+1]) ^ playerIsBlack))
      {
           newPosition[y+direction][x+1] = 1-playerIsBlack;
           newPosition[y][x] = -1;
@@ -393,7 +393,7 @@ boardLinkedListSegment *getPossibleMovesPawn(board position, int x, int y, board
 
      }
      //En Passante
-     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (IS_BLACK(position[y][x-1]) ^ playerIsBlack))
+     if(GET_TYPE(position[y][x-1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x-1]) && (GET_COLOR(position[y][x-1]) ^ playerIsBlack))
      {
           newPosition[y+direction][x-1] = position[y][x];
           newPosition[y][x] = -1;
@@ -402,7 +402,7 @@ boardLinkedListSegment *getPossibleMovesPawn(board position, int x, int y, board
           memcpy(newPosition,position,sizeof(newPosition));
 
      }
-     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (IS_BLACK(position[y][x+1]) ^ playerIsBlack))
+     if(GET_TYPE(position[y][x+1]) == PAWN_M2 && IS_EMPTY(position[y+direction][x+1]) && (GET_COLOR(position[y][x+1]) ^ playerIsBlack))
      {
           newPosition[y+direction][x+1] = position[y][x];
           newPosition[y][x] = -1;
@@ -453,7 +453,7 @@ boardLinkedListSegment *getPossibleMovesKnight(board position, int x, int y, boa
           
 
           */
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -501,7 +501,7 @@ boardLinkedListSegment *getPossibleMovesBishop(board position, int x, int y, boa
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -552,7 +552,7 @@ boardLinkedListSegment *getPossibleMovesRook(board position, int x, int y, board
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -605,7 +605,7 @@ boardLinkedListSegment *getPossibleMovesQueen(board position, int x, int y, boar
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -646,7 +646,7 @@ boardLinkedListSegment *getPossibleMovesQueen(board position, int x, int y, boar
                     0 1 Bad  - Same Color
                     0 0 Good - Can Capture
                */
-               if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+               if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
                {
                     break;
                }
@@ -683,7 +683,7 @@ boardLinkedListSegment *getPossibleMovesKing(board position, int x, int y, board
                continue;
           }
           // Works same as in other functions
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -706,7 +706,7 @@ boardLinkedListSegment *getPossibleMovesKing(board position, int x, int y, board
           }
           // Works same as in other functions
 
-          if(!(IS_BLACK(position[yToCheck][xToCheck]) ^ playerIsBlack))
+          if(!(GET_COLOR(position[yToCheck][xToCheck]) ^ playerIsBlack))
           {
                continue;
           }
@@ -810,7 +810,7 @@ boardLinkedList *getPossibleMovesFromBoard(board position, bool playerIsBlack)
                     continue;
                }
                //Check if piece belongs to opposite player
-               if (IS_BLACK(piece) ^ playerIsBlack)
+               if (GET_COLOR(piece) ^ playerIsBlack)
                {
                     continue;
 

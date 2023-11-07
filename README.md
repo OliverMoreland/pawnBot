@@ -1,8 +1,11 @@
 # pawnBot
 This is a chess bot that I am making as a project.
 Current (ish) state is: basic minimax bot
+Pawn Position: a3 - Version 1.0 Completed
 
-
+Goals for 2.0:
+- Neural Network Eval Function
+- Continuous Background Processing
 
 ## Notes:
 

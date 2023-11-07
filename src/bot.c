@@ -22,7 +22,7 @@ int eval_board(board to_eval, bool computer_is_black){
                     continue;
                }
                // Could optimize if necessary, but this is more readable
-               if(IS_BLACK(piece) == computer_is_black){
+               if(GET_COLOR(piece) == computer_is_black){
                     eval += POINT_VALUES[GET_TYPE(piece)];
                }else{
                     eval -= POINT_VALUES[GET_TYPE(piece)];
@@ -64,7 +64,7 @@ int minimax_odd(int depth, board current, bool computer_is_black){
           return eval_board(current,computer_is_black);
      }
      boardLinkedList *head = possibleMoves;
-     //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_IS_WHITE);
+     //printf("start minimax with depth %d and h->n = %d\n",depth,COMPUTER_COLOR);
      int max = -100000;
      
      while(head->next != 0){

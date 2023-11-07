@@ -17,7 +17,7 @@ int main()
      boardLinkedList *history = (boardLinkedList *) malloc(sizeof(boardLinkedList));
 
      appendToBLL(current,history);
-     if(!COMPUTER_IS_WHITE){
+     if(!COMPUTER_COLOR){
           printBoard(current);
           human_move(current);
           printBoard(current);
@@ -26,9 +26,9 @@ int main()
      }
      while(true){
           if(computer_move(current)){
-               piece king = findPiece(current, KING*2+1-COMPUTER_IS_WHITE);
+               piece king = findPiece(current, KING*2+1-COMPUTER_COLOR);
                if(IS_EMPTY(king.type)){
-                    king = findPiece(current, U_KING*2+1-COMPUTER_IS_WHITE);
+                    king = findPiece(current, U_KING*2+1-COMPUTER_COLOR);
                }
                if(inCheck(current,king))
                     printf("Checkmate - YOU WIN!!!\n");
@@ -39,9 +39,9 @@ int main()
           appendToBLL(current,history);
           printBoard(current);
           if(human_move(current)){
-               piece king = findPiece(current, KING*2+COMPUTER_IS_WHITE);
+               piece king = findPiece(current, KING*2+COMPUTER_COLOR);
                if(IS_EMPTY(king.type)){
-                    king = findPiece(current, U_KING*2+COMPUTER_IS_WHITE);
+                    king = findPiece(current, U_KING*2+COMPUTER_COLOR);
                }
                if(inCheck(current,king))
                     printf("Checkmate - you lose :(\n");

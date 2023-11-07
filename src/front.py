@@ -17,13 +17,13 @@ init_board = [
      ]
 '''
 init_board = [                              
-          [ 17, 3, 5, 9,15, 5, 3, 17], 
+          [-1,-1,-1,-1,15,-1,-1,-1], 
+          [1,-1,-1,-1,-1,-1,-1,-1], 
           [-1,-1,-1,-1,-1,-1,-1,-1], 
           [-1,-1,-1,-1,-1,-1,-1,-1], 
           [-1,-1,-1,-1,-1,-1,-1,-1], 
           [-1,-1,-1,-1,-1,-1,-1,-1], 
-          [-1,-1,-1,-1,-1,-1,-1,-1], 
-          [-1,-1,-1,-1,-1,-1,-1,-1], 
+          [ 0, 0, 0, 0, 0, 0, 0, 0],
           [ 16, 2, 4, 8,14, 4, 2, 16] 
      ]'''
 BOARD_SIZE = 8
@@ -48,8 +48,8 @@ path = os.getcwd()
 chessBotLib = ctypes.CDLL(os.path.join(path, 'lib/libchessbot.so'))
 chessBotLib.get_possible_moves_from_board.restype = ctypes.POINTER(BoardLinkedList)
 chessBotLib.get_possible_moves_from_board.argtypes = [Board,ctypes.c_bool]
-chessBotLib.get_possible_moves_from_piece.restype = ctypes.POINTER(CoordLL)
-chessBotLib.get_possible_moves_from_piece.argtypes = [Board,ctypes.c_int,ctypes.c_int,ctypes.c_bool]
+chessBotLib.get_coords_from_piece.restype = ctypes.POINTER(CoordLL)
+chessBotLib.get_coords_from_piece.argtypes = [Board,ctypes.c_int,ctypes.c_int,ctypes.c_bool]
 chessBotLib.print_board.argtypes = [Board]
 chessBotLib.is_legal_move.restype = ctypes.c_bool
 chessBotLib.is_legal_move.argtypes = [Board,Board,ctypes.c_bool]
@@ -164,7 +164,7 @@ def get_possible_moves(x,y,playerIsBlack):
     global possiblesMoves
     possiblesMoves = []
     #print('start')
-    moves = chessBotLib.get_possible_moves_from_piece(board,x,y,playerIsBlack)
+    moves = chessBotLib.get_coords_from_piece(board,x,y,playerIsBlack)
     #print('end')
 
     movesHead = moves
@@ -185,8 +185,12 @@ draw.ellipse([(0, 0), (moveRadius * 2, moveRadius * 2)], fill=circle_color)
 moveCircle = ImageTk.PhotoImage(image)
 
 def computerMove():
-    chessBotLib.computer_move(board, True)
+    ret = chessBotLib.computer_move(board, True)
+    if(ret == 1):
+        root.destroy()
+        return 1
     drawBoard(board)
+    return 0
 
 def move_start(event):
     widget = event.widget
@@ -233,7 +237,12 @@ def move_end(event):
     oRow = widget.data['oRow']
     #if(move_piece(col,row))
     if([col,row] in possiblesMoves):
-        ret = chessBotLib.human_move_gui(board,oCol, oRow, col, row)
+        piece = board[oRow*8+oCol]
+        ret = 0
+        if(piece == 0 and row == 0):
+            ret = chessBotLib.human_move_gui(board,oCol, oRow, col, row,8)
+        else:
+            ret = chessBotLib.human_move_gui(board,oCol, oRow, col, row,piece)
         if(ret == 1):
             print('end')
         #chessBotLib.print_board(board)

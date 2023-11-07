@@ -53,7 +53,7 @@ int human_move_gui(board current, int ox, int oy, int x, int y, int piece){
           if(
                IS_EMPTY(head->current[oy][ox]) // The piece has moved
                &&
-               IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE // It's our piece
+               GET_COLOR(piece_to_check) == HUMAN_COLOR // It's our piece
                &&
                (
                     GET_TYPE(piece_to_check) == moved_type
@@ -77,7 +77,7 @@ int human_move_gui(board current, int ox, int oy, int x, int y, int piece){
                return 0;
           }else{
                //print_board(head->current);
-               //printf("%d %d %d %d\n",piece_to_check,GET_TYPE(piece_to_check), to_move.type, IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE);
+               //printf("%d %d %d %d\n",piece_to_check,GET_TYPE(piece_to_check), to_move.type, IS_BLACK(piece_to_check) == COMPUTER_COLOR);
           }
           head = head->next;
      }
@@ -90,7 +90,7 @@ int human_move_gui(board current, int ox, int oy, int x, int y, int piece){
 }
 
 int human_move(board current){
-     boardLinkedList *possibleMoves = get_possible_moves_from_board(current,COMPUTER_IS_WHITE);
+     boardLinkedList *possibleMoves = get_possible_moves_from_board(current,HUMAN_COLOR);
      if(possibleMoves->next == 0){
           freeBLL(possibleMoves);
           return 1;
@@ -98,14 +98,14 @@ int human_move(board current){
      while(true){ // repeat so players can retry if they make an illegal move
           boardLinkedList *head = possibleMoves;
           piece to_move = read_piece();
-          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && IS_BLACK(current[to_move.y][to_move.x]) == COMPUTER_IS_WHITE)){
+          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && GET_COLOR(current[to_move.y][to_move.x]) == HUMAN_COLOR)){
                printf("Error: illegal move - reading\n");
                continue;
           }
           while(head->next != 0){
                int piece_to_check = head->current[to_move.y][to_move.x];
                if(
-                    IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
+                    GET_COLOR(piece_to_check) == HUMAN_COLOR
                     &&
                     (
                          GET_TYPE(piece_to_check) == to_move.type 

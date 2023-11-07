@@ -29,7 +29,7 @@ piece read_piece(){
 
 
 int human_move(board current){
-     boardPosition state = {.blackMove = COMPUTER_IS_WHITE, .eval = 0x7000};
+     boardPosition state = {.blackMove = COMPUTER_COLOR, .eval = 0x7000};
      memcpy(state.position,current,sizeof(board));
      boardLinkedList *possibleMoves = get_possible_moves_from_board(state.position,state.blackMove);
      if(possibleMoves->next == 0){
@@ -39,14 +39,14 @@ int human_move(board current){
      while(true){ // repeat so players can retry if they make an illegal move
           boardLinkedList *head = possibleMoves;
           piece to_move = read_piece();
-          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && IS_BLACK(current[to_move.y][to_move.x]) == COMPUTER_IS_WHITE)){
+          if(to_move.x < 0 || to_move.x >= BOARD_SIZE || to_move.y < 0 || to_move.y >= 8 || to_move.type < 0 || to_move.type >= NUM_PIECE_TYPES || (GET_TYPE(current[to_move.y][to_move.x]) == to_move.type && GET_COLOR(current[to_move.y][to_move.x]) == COMPUTER_COLOR)){
                printf("Error: illegal move - reading\n");
                continue;
           }
           while(head->next != 0){
                int piece_to_check = head->current[to_move.y][to_move.x];
                if(
-                    IS_BLACK(piece_to_check) == COMPUTER_IS_WHITE
+                    GET_COLOR(piece_to_check) == COMPUTER_COLOR
                     &&
                     (
                          GET_TYPE(piece_to_check) == to_move.type 

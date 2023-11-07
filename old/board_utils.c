@@ -139,7 +139,7 @@ bool inCheck(board position,piece king){
           (
           GET_TYPE(position[yToCheck][xToCheck]) != KNIGHT)
           ||
-          !(IS_BLACK(position[yToCheck][xToCheck]) ^ IS_BLACK(king.type))
+          !(GET_COLOR(position[yToCheck][xToCheck]) ^ GET_COLOR(king.type))
           )
           {
                continue;
@@ -169,7 +169,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != BISHOP 
@@ -215,7 +215,7 @@ bool inCheck(board position,piece king){
                }
                if(
 
-                    !(IS_BLACK(pieceToCheck) ^ IS_BLACK(king.type))
+                    !(GET_COLOR(pieceToCheck) ^ GET_COLOR(king.type))
                     ||
                     (
                          GET_TYPE(pieceToCheck) != ROOK 
@@ -245,13 +245,13 @@ bool inCheck(board position,piece king){
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x-1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x-1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x-1]) ^ GET_COLOR(king.type)
           )
           ||
           (
                GET_TYPE(position[king.y+FORWARD(king.type)][king.x+1]) == PAWN
                &&
-               IS_BLACK(position[king.y+FORWARD(king.type)][king.x+1]) ^ IS_BLACK(king.type)
+               GET_COLOR(position[king.y+FORWARD(king.type)][king.x+1]) ^ GET_COLOR(king.type)
           )
      ){
           return true;
