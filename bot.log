@@ -1,0 +1,5 @@
+0
+after
+BEGIN LOG
+test log
+END LOG

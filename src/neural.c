@@ -74,6 +74,52 @@ int init_network(network *network){
 
 }
 
+double relu(double input_sum){
+    if(input_sum > 0){
+        return input_sum;
+    }
+    return 0;
+}
+double d_relu(double input_sum){
+    if(input_sum > 0){
+        return 1;
+    }
+    return 0;
+}
+// TODO: Finish
+int forward_pass(network *network,int input[NUM_INPUTS]){
+
+    for (int i = 0; i < NUM_HIDDEN_NEURONS; i++)
+    {
+        double sum = network->input_layer[i].bias;
+        for(int j = 0; j < NUM_INPUTS;j++){
+            sum += network->input_layer[i].weights[j];
+        }
+    }
+    for (int i = 0; i < NUM_HIDDEN_LAYERS-1; i++)
+    {
+        for (int j = 0; j < NUM_HIDDEN_NEURONS; j++)
+        {
+            network->hidden_layers[i][j].bias = 0;
+            for (int k = 0; k < NUM_HIDDEN_NEURONS; k++)
+            {
+                network->hidden_layers[i][j].weights[k] = weight_init_value(k);
+            }
+            
+        }
+        
+    }
+    for (int i = 0; i < NUM_OUTPUTS; i++)
+    {
+        network->output_layer[i].bias = 0;
+        for (int j = 0; j < NUM_HIDDEN_NEURONS; j++)
+        {
+            network->output_layer[i].weights[j] = weight_init_value(j);
+        }
+        
+    }
+}
+
 
 int main(){
     srand(time(NULL));  
@@ -87,6 +133,7 @@ int main(){
     if (0 == size) {
         init_network(current_network);
     }
+
     printf("%f",current_network->hidden_layers[0][1].weights[0]);
     fwrite(current_network,sizeof(network),1,network_file);
 }
