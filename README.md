@@ -1,7 +1,11 @@
 # pawnBot
 This is a chess bot that I am making as a project.
+
 Current (ish) state is: basic minimax bot
+
 Pawn Position: a3 - Version 1.0 Completed
+
+I learned a lot of things from this project, one of which is not to write the kind of code that I did in moves.c - I would reccomend not looking at it if you value your sanity lol
 
 Goals for 2.0:
 - Neural Network Eval Function
